@@ -27,52 +27,70 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import math
 import os
-from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import torch
 from datasets import load_dataset
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    Trainer,
-    TrainingArguments,
+    BitsAndBytesConfig,
 )
 
 from peft import (
     LoraConfig,
-    get_peft_model,
-    PeftModel,
 )
+from trl import SFTTrainer, SFTConfig
+import yaml
+
 
 # -----------------------------
-# Defaults / Hyperparams
+# Defaults / Hyperparams (from config.yaml if present)
 # -----------------------------
-BASE_MODEL = "meta-llama/Llama-2-7b"
-TINY_DEBUG_MODEL = "sshleifer/tiny-gpt2"
+CONFIG_PATH = "config.yaml"
 
-LORA_R = 8
-LORA_ALPHA = 32
-LORA_DROPOUT = 0.05
-LEARNING_RATE = 2e-4
-BATCH_SIZE = 4
-GRAD_ACCUM = 16
-MAX_SEQ_LEN = 512
-EPOCHS = 3
-SAVE_DIR = "./lora_out"
-SEED = 42
+def _load_config(path: str) -> dict:
+    if not os.path.exists(path) or yaml is None:
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+            if not isinstance(data, dict):
+                return {}
+            return data
+    except Exception:
+        return {}
 
-PROMPT_TEMPLATE = (
-    # This template is for the fixer task (bad -> good). The core repo still focuses on creating the bad data.
-    "You are a documentation fixer. Identify the most degraded span in the input and propose a clear fix.\n"
-    "{context_block}"
-    "Bad:\n{bad}\n\n"
-    "Respond EXACTLY with:\n"
-    "Span: [START:<token_idx>][END:<token_idx>]\n"
-    "Suggestion: <improved sentence or snippet>\n"
-    "Rationale: <one-sentence explanation>\n"
+_CFG = _load_config(CONFIG_PATH)
+
+BASE_MODEL = _CFG.get("base_model", "meta-llama/Llama-2-7b")
+TINY_DEBUG_MODEL = _CFG.get("tiny_debug_model", "sshleifer/tiny-gpt2")
+
+_LORA = _CFG.get("lora", {}) if isinstance(_CFG.get("lora", {}), dict) else {}
+LORA_R = int(_LORA.get("r", 8))
+LORA_ALPHA = int(_LORA.get("alpha", 32))
+LORA_DROPOUT = float(_LORA.get("dropout", 0.05))
+
+LEARNING_RATE = float(_CFG.get("learning_rate", 2e-4))
+BATCH_SIZE = int(_CFG.get("batch_size", 4))
+GRAD_ACCUM = int(_CFG.get("grad_accum", 16))
+MAX_SEQ_LEN = int(_CFG.get("max_seq_len", 512))
+EPOCHS = int(_CFG.get("epochs", 3))
+SAVE_DIR = str(_CFG.get("save_dir", "./lora_out"))
+SEED = int(_CFG.get("seed", 42))
+
+PROMPT_TEMPLATE = _CFG.get(
+    "prompt_template",
+    (
+        "You are a documentation fixer. Identify the most degraded span in the input and propose a clear fix.\n"
+        "{context_block}"
+        "Bad:\n{bad}\n\n"
+        "Respond EXACTLY with:\n"
+        "Span: [START:<token_idx>][END:<token_idx>]\n"
+        "Suggestion: <improved sentence or snippet>\n"
+        "Rationale: <one-sentence explanation>\n"
+    ),
 )
 
 LOGGER = logging.getLogger("train_qLoRA")
@@ -156,99 +174,31 @@ def load_tokenizer(model_name: str) -> AutoTokenizer:
     return tok
 
 
-def load_model(model_name: str, debug_tiny: bool, device_map: str = "auto"):
+def load_model(model_name: str, debug_tiny: bool, device_map: str = "auto", quantization: str = "auto"):
     if debug_tiny:
         model = AutoModelForCausalLM.from_pretrained(
             model_name, torch_dtype=torch.float32, device_map=device_map
         )
         return model
-    # 4-bit QLoRA-style load
-    model = AutoModelForCausalLM.from_pretrained(
+    # Quantization modes:
+    # - auto: do not pass BitsAndBytes; allow model's own quantization config (e.g., BitNet) to load
+    # - bnb_4bit: use BitsAndBytes 4-bit quantization
+    # - none: no quantization arguments (may require large VRAM)
+    if quantization == "bnb_4bit":
+        quant_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=torch.float16,
+        )
+        return AutoModelForCausalLM.from_pretrained(
+            model_name,
+            quantization_config=quant_config,
+            device_map=device_map,
+        )
+    # auto or none both avoid BitsAndBytes; for 'none' we simply don't pass quantization args
+    return AutoModelForCausalLM.from_pretrained(
         model_name,
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.float16,
         device_map=device_map,
     )
-    return model
-
-
-def tokenize_examples(
-    examples: Dict[str, List],
-    tokenizer: AutoTokenizer,
-    max_len: int,
-    target_mode: str,
-) -> Dict[str, List[List[int]]]:
-    """
-    Convert raw fields into tokenized inputs and labels for Causal LM with masked input loss.
-    """
-    bad_list = examples["bad"]
-    good_list = examples["good"]
-    ctx_list = examples.get("context", [None] * len(bad_list))
-    s_list = examples.get("span_token_start", [None] * len(bad_list))
-    e_list = examples.get("span_token_end", [None] * len(bad_list))
-
-    input_ids_batch: List[List[int]] = []
-    labels_batch: List[List[int]] = []
-    attention_batch: List[List[int]] = []
-
-    eos_id = tokenizer.eos_token_id
-
-    for bad, good, ctx, s, e in zip(bad_list, good_list, ctx_list, s_list, e_list):
-        input_text = build_prompt(bad=bad, context=ctx)
-        target_text = build_target_text(
-            good=good, span_start=s, span_end=e, mode=target_mode
-        )
-
-        in_ids = tokenizer.encode(input_text, add_special_tokens=False)
-        tgt_ids = tokenizer.encode(target_text, add_special_tokens=False)
-
-        # Concat: input + eos + target
-        full_ids = in_ids + ([eos_id] if eos_id is not None else []) + tgt_ids
-        # Create labels masking input portion
-        n_input = len(in_ids) + (1 if eos_id is not None else 0)
-        labels = [-100] * n_input + tgt_ids
-
-        # Truncate from the left if too long (preserve the target tail)
-        if len(full_ids) > max_len:
-            cut = len(full_ids) - max_len
-            # We must adjust labels accordingly
-            full_ids = full_ids[cut:]
-            if cut >= n_input:
-                # All masked part removed; shift cut over labels
-                labels = labels[cut - n_input :]
-            else:
-                labels = [-100] * (n_input - cut) + labels[n_input:]
-
-        attn = [1] * len(full_ids)
-        input_ids_batch.append(full_ids)
-        labels_batch.append(labels)
-        attention_batch.append(attn)
-
-    return {
-        "input_ids": input_ids_batch,
-        "labels": labels_batch,
-        "attention_mask": attention_batch,
-    }
-
-
-@dataclass
-class SimpleDataCollator:
-    pad_token_id: int
-    label_pad_id: int = -100
-
-    def __call__(self, features: List[Dict[str, List[int]]]) -> Dict[str, torch.Tensor]:
-        max_len = max(len(x["input_ids"]) for x in features)
-        input_ids, attn, labels = [], [], []
-        for x in features:
-            pad_len = max_len - len(x["input_ids"])
-            input_ids.append(x["input_ids"] + [self.pad_token_id] * pad_len)
-            attn.append(x["attention_mask"] + [0] * pad_len)
-            labels.append(x["labels"] + [self.label_pad_id] * pad_len)
-        return {
-            "input_ids": torch.tensor(input_ids, dtype=torch.long),
-            "attention_mask": torch.tensor(attn, dtype=torch.long),
-            "labels": torch.tensor(labels, dtype=torch.long),
-        }
 
 
 def main():
@@ -272,6 +222,13 @@ def main():
         type=str,
         default="auto",
         help='Device map for model, e.g., "auto" or "cpu".',
+    )
+    ap.add_argument(
+        "--quantization",
+        type=str,
+        default="auto",
+        choices=["auto", "bnb_4bit", "none"],
+        help="Quantization mode: 'auto' loads model as-is (useful for pre-quantized models like BitNet); 'bnb_4bit' forces BitsAndBytes 4-bit; 'none' disables quantization args.",
     )
     ap.add_argument("--per_device_batch_size", type=int, default=BATCH_SIZE)
     ap.add_argument("--gradient_accumulation_steps", type=int, default=GRAD_ACCUM)
@@ -343,7 +300,7 @@ def main():
     model_name = TINY_DEBUG_MODEL if args.debug_tiny else args.base_model
     tokenizer = load_tokenizer(model_name)
     model = load_model(
-        model_name, debug_tiny=args.debug_tiny, device_map=args.device_map
+        model_name, debug_tiny=args.debug_tiny, device_map=args.device_map, quantization=args.quantization
     )
 
     # Inject LoRA adapters
@@ -357,7 +314,7 @@ def main():
         bias="none",
         task_type="CAUSAL_LM",
     )
-    model = get_peft_model(model, peft_config)
+    # Let TRL's SFTTrainer apply PEFT adapters via peft_config
 
     # Load dataset
     if args.parquet_path:
@@ -420,25 +377,25 @@ def main():
     else:
         data = load_dataset("json", data_files=args.dataset, split="train")
 
-    # Tokenize
-    def _map_fn(batch):
-        return tokenize_examples(
-            batch,
-            tokenizer=tokenizer,
-            max_len=args.max_seq_len,
-            target_mode=args.train_target_format,
-        )
+    # Prepare dataset for SFTTrainer in prompt-completion format
+    def _to_prompt_completion(ex):
+        bad = ex.get("bad", "")
+        good = ex.get("good", "")
+        ctx = ex.get("context", None)
+        s = ex.get("span_token_start", None)
+        e = ex.get("span_token_end", None)
+        prompt = build_prompt(bad=bad, context=ctx)
+        completion = build_target_text(good=good, span_start=s, span_end=e, mode=args.train_target_format)
+        return {"prompt": prompt, "completion": completion}
 
-    tokenized = data.map(_map_fn, batched=True, remove_columns=data.column_names)
+    pc_ds = data.map(_to_prompt_completion, remove_columns=[c for c in data.column_names if c not in ["prompt", "completion"]])
 
     # 90/10 split
-    split = tokenized.train_test_split(test_size=0.1, seed=args.seed)
+    split = pc_ds.train_test_split(test_size=0.1, seed=args.seed)
     train_ds, eval_ds = split["train"], split["test"]
 
-    collator = SimpleDataCollator(pad_token_id=tokenizer.pad_token_id)
-
     total_steps = args.max_steps if args.max_steps > 0 else None
-    training_args = TrainingArguments(
+    sft_config = SFTConfig(
         output_dir=args.save_dir,
         per_device_train_batch_size=args.per_device_batch_size,
         per_device_eval_batch_size=max(1, args.per_device_batch_size),
@@ -449,26 +406,29 @@ def main():
         logging_steps=10,
         save_steps=100,
         save_total_limit=2,
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         eval_steps=100,
         report_to=[],
         fp16=not args.debug_tiny,
         bf16=False,
         seed=args.seed,
+        max_length=args.max_seq_len,
+        completion_only_loss=True,
     )
 
-    trainer = Trainer(
+    trainer = SFTTrainer(
         model=model,
-        args=training_args,
+        args=sft_config,
         train_dataset=train_ds,
         eval_dataset=eval_ds,
-        data_collator=collator,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
+        peft_config=peft_config,
     )
 
     trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
     os.makedirs(args.save_dir, exist_ok=True)
-    model.save_pretrained(args.save_dir)
+    # Save resulting PEFT adapters and tokenizer
+    trainer.model.save_pretrained(args.save_dir)
     tokenizer.save_pretrained(args.save_dir)
     LOGGER.info(f"Saved LoRA adapters to {args.save_dir}")
 

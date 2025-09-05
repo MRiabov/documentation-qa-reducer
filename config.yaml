@@ -1,0 +1,30 @@
+# Training configuration for train_qLora.py
+# You can edit this file to change defaults without passing CLI flags.
+
+base_model: meta-llama/Llama-2-7b
+# base_model: tiiuae/Falcon-E-3B-Instruct
+tiny_debug_model: sshleifer/tiny-gpt2
+
+lora:
+  r: 8
+  alpha: 32
+  dropout: 0.05
+
+learning_rate: 0.0002
+batch_size: 4
+grad_accum: 16
+max_seq_len: 512
+epochs: 3
+save_dir: ./lora_out
+seed: 42
+
+prompt_template: |
+  We are creating a dataset for writing text fixer, and you are 
+  {context_block}
+  Bad:
+  {bad}
+
+  Respond EXACTLY with:
+  Span: [START:<token_idx>][END:<token_idx>]
+  Suggestion: <improved sentence or snippet>
+  Rationale: <one-sentence explanation>
