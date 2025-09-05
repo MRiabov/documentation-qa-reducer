@@ -7,28 +7,25 @@ train_qLora.py
 
 Primary repo purpose: degrade high-quality developer documentation into lower-quality variants to synthesize a "bad" corpus from a "good" corpus.
 
-This script is an optional consumer of that dataset. It shows how to train a 7B causal/instruction model with 4-bit quantization + LoRA adapters (QLoRA style) on the paired (bad, good) data.
+This script is an optional consumer of that dataset. It shows how to train a causal/instruction model with optional 4-bit quantization + LoRA adapters (QLoRA style) on the paired (bad, good) data.
 By default, it trains a "fixer" model that maps bad -> good (i.e., rewrites degraded inputs back to high quality). If you want to train a degrader model instead, prepare batches externally using `good` as input and `bad` as target, without changing this file's logic.
 
-Example runs:
-  # Debug tiny quick test:
-  python train_qLora.py --dataset sample_dataset.jsonl --debug_tiny --per_device_batch_size 1 --max_steps 1
-
-  # With accelerate:
-  accelerate launch train_qLora.py --dataset dataset.jsonl --save_dir ./lora_out --device_map auto
+Usage:
+  # Configure all options in config.yaml, then simply run:
+  python train_qLora.py
+  # Or with accelerate
+  accelerate launch train_qLora.py
 
 Notes:
-- Default BASE_MODEL is meta-llama/Llama-2-7b. Use --debug_tiny to switch to a tiny model for CPU-only demos.
-- Targets default to training a fixer (bad -> good). Optional --train_target_format "structured" supervises the exact eval format.
+- Defaults are read from config.yaml. No CLI flags are used.
+- Targets default to training a fixer (bad -> good). Optional train_target_format: "structured" supervises the exact eval format.
 """
 
 from __future__ import annotations
 
-import argparse
-import json
 import logging
 import os
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import torch
 from datasets import load_dataset
@@ -37,10 +34,7 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
 )
-
-from peft import (
-    LoraConfig,
-)
+from peft import LoraConfig
 from trl import SFTTrainer, SFTConfig
 import yaml
 
@@ -97,6 +91,19 @@ PROMPT_TEMPLATE = _CFG.get(
 
 LOGGER = logging.getLogger("train_qLoRA")
 
+# Training direction and optional degrader prompt template
+# One of: 'fixer' (default) or 'degrader'
+TRAIN_DIRECTION = _CFG.get("train_direction", "fixer")
+DEGRADER_PROMPT_TEMPLATE = _CFG.get(
+    "degrader_prompt_template",
+    (
+        "You are a text degrader. Introduce grammatical errors and reduce readability while preserving the original meaning.\n"
+        "{context_block}"
+        "Good:\n{good}\n\n"
+        "Respond ONLY with the degraded text.\n"
+    ),
+)
+
 
 # -----------------------------
 # Utilities
@@ -145,6 +152,11 @@ def guess_lora_target_modules(model) -> List[str]:
 def build_prompt(bad: str, context: Optional[str]) -> str:
     context_block = f"Context:\n{context}\n\n" if context else ""
     return PROMPT_TEMPLATE.format(context_block=context_block, bad=bad)
+
+
+def build_prompt_degrader(good: str, context: Optional[str]) -> str:
+    context_block = f"Context:\n{context}\n\n" if context else ""
+    return DEGRADER_PROMPT_TEMPLATE.format(context_block=context_block, good=good)
 
 
 def build_target_text(
@@ -209,94 +221,44 @@ def load_model(
 
 
 def main():
-    ap = argparse.ArgumentParser(
-        description="Train QLoRA adapters on degraded docs dataset."
-    )
-    ap.add_argument(
-        "--dataset",
-        type=str,
-        default="sample_dataset.jsonl",
-        help="Path to JSONL dataset.",
-    )
-    ap.add_argument(
-        "--save_dir", type=str, default=SAVE_DIR, help="Where to save LoRA adapters."
-    )
-    ap.add_argument(
-        "--base_model", type=str, default=BASE_MODEL, help="Base model to load."
-    )
-    ap.add_argument(
-        "--device_map",
-        type=str,
-        default="auto",
-        help='Device map for model, e.g., "auto" or "cpu".',
-    )
-    ap.add_argument(
-        "--quantization",
-        type=str,
-        default="auto",
-        choices=["auto", "bnb_4bit", "none"],
-        help="Quantization mode: 'auto' loads model as-is (useful for pre-quantized models like BitNet); 'bnb_4bit' forces BitsAndBytes 4-bit; 'none' disables quantization args.",
-    )
-    ap.add_argument("--per_device_batch_size", type=int, default=BATCH_SIZE)
-    ap.add_argument("--gradient_accumulation_steps", type=int, default=GRAD_ACCUM)
-    ap.add_argument("--max_seq_len", type=int, default=MAX_SEQ_LEN)
-    ap.add_argument("--learning_rate", type=float, default=LEARNING_RATE)
-    ap.add_argument("--epochs", type=int, default=EPOCHS)
-    ap.add_argument("--seed", type=int, default=SEED)
-    ap.add_argument("--lora_r", type=int, default=LORA_R)
-    ap.add_argument("--lora_alpha", type=int, default=LORA_ALPHA)
-    ap.add_argument("--lora_dropout", type=float, default=LORA_DROPOUT)
-    ap.add_argument("--resume_from_checkpoint", type=str, default=None)
-    ap.add_argument(
-        "--debug_tiny",
-        action="store_true",
-        help=f"Use tiny model ({TINY_DEBUG_MODEL}) for quick tests.",
-    )
-    ap.add_argument(
-        "--train_target_format",
-        type=str,
-        default="good_only",
-        choices=["good_only", "structured"],
-    )
-    ap.add_argument(
-        "--max_steps",
-        type=int,
-        default=-1,
-        help="Override number of training steps (e.g., 1 for test).",
-    )
-    ap.add_argument(
-        "--log_level",
-        type=str,
-        default="INFO",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-    )
-    # Local Parquet dataset support
-    ap.add_argument(
-        "--parquet_path",
-        type=str,
-        default=None,
-        help="Optional path to a Parquet file produced by coedit_preprocessing.py. If provided, overrides --hf_dataset/--dataset.",
-    )
-    # Hugging Face dataset integration (e.g., 'grammarly/coedit')
-    ap.add_argument(
-        "--hf_dataset",
-        type=str,
-        default=None,
-        help="Optional Hugging Face dataset name to load, e.g., 'grammarly/coedit'. If provided, --dataset (JSONL) is ignored.",
-    )
-    ap.add_argument(
-        "--hf_split",
-        type=str,
-        default="train",
-        help="Split name for HF dataset (e.g., train, validation, test).",
-    )
-    ap.add_argument(
-        "--coedit_task",
-        type=str,
-        default=None,
-        help="Optional filter for CoEdIT task field (e.g., 'gec'). If set, only rows with matching 'task' are used.",
-    )
-    args = ap.parse_args()
+    # Load all runtime settings exclusively from config.yaml
+    class Args:
+        pass
+
+    args = Args()
+    # Data sources
+    args.dataset = str(_CFG.get("dataset", "sample_dataset.jsonl"))
+    args.parquet_path = _CFG.get("parquet_path", None)
+    args.hf_dataset = _CFG.get("hf_dataset", None)
+    args.hf_split = _CFG.get("hf_split", "train")
+    args.coedit_task = _CFG.get("coedit_task", None)
+    # Save / model
+    args.save_dir = SAVE_DIR
+    args.base_model = BASE_MODEL
+    args.device_map = str(_CFG.get("device_map", "auto"))
+    args.quantization = str(_CFG.get("quantization", "auto"))
+    args.resume_from_checkpoint = _CFG.get("resume_from_checkpoint", None)
+    # Training hyperparams
+    args.per_device_batch_size = int(_CFG.get("batch_size", BATCH_SIZE))
+    args.gradient_accumulation_steps = int(_CFG.get("grad_accum", GRAD_ACCUM))
+    args.max_seq_len = int(_CFG.get("max_seq_len", MAX_SEQ_LEN))
+    args.learning_rate = float(_CFG.get("learning_rate", LEARNING_RATE))
+    args.epochs = int(_CFG.get("epochs", EPOCHS))
+    args.max_steps = int(_CFG.get("max_steps", -1))
+    args.seed = int(_CFG.get("seed", SEED))
+    args.val_split = float(_CFG.get("val_split", 0.1))
+    # LoRA
+    args.lora_r = LORA_R
+    args.lora_alpha = LORA_ALPHA
+    args.lora_dropout = LORA_DROPOUT
+    # Other behavior
+    args.train_target_format = _CFG.get("train_target_format", "good_only")
+    args.debug_tiny = bool(_CFG.get("debug_tiny", False))
+    args.log_level = _CFG.get("log_level", "INFO")
+    args.logging_steps = int(_CFG.get("logging_steps", 10))
+    args.eval_steps = int(_CFG.get("eval_steps", 100))
+    args.evaluation_strategy = _CFG.get("evaluation_strategy", "steps")
+    args.bf16 = bool(_CFG.get("bf16", False))
 
     logging.basicConfig(
         level=getattr(logging, args.log_level),
@@ -406,10 +368,16 @@ def main():
         ctx = ex.get("context", None)
         s = ex.get("span_token_start", None)
         e = ex.get("span_token_end", None)
-        prompt = build_prompt(bad=bad, context=ctx)
-        completion = build_target_text(
-            good=good, span_start=s, span_end=e, mode=args.train_target_format
-        )
+        if TRAIN_DIRECTION == "degrader":
+            # Degrader: input is GOOD, completion is BAD (raw degraded text)
+            prompt = build_prompt_degrader(good=good, context=ctx)
+            completion = bad
+        else:
+            # Fixer (default): input is BAD, completion is GOOD (structured optional)
+            prompt = build_prompt(bad=bad, context=ctx)
+            completion = build_target_text(
+                good=good, span_start=s, span_end=e, mode=args.train_target_format
+            )
         return {"prompt": prompt, "completion": completion}
 
     pc_ds = data.map(
@@ -419,8 +387,8 @@ def main():
         ],
     )
 
-    # 90/10 split
-    split = pc_ds.train_test_split(test_size=0.1, seed=args.seed)
+    # Train/val split
+    split = pc_ds.train_test_split(test_size=args.val_split, seed=args.seed)
     train_ds, eval_ds = split["train"], split["test"]
 
     total_steps = args.max_steps if args.max_steps > 0 else None
@@ -432,14 +400,14 @@ def main():
         learning_rate=args.learning_rate,
         num_train_epochs=0 if total_steps else args.epochs,
         max_steps=total_steps if total_steps else -1,
-        logging_steps=10,
-        save_steps=100,
-        save_total_limit=2,
-        eval_strategy="steps",
-        eval_steps=100,
-        report_to=[],
+        logging_steps=args.logging_steps,
+        save_steps=_CFG.get("save_steps", 100),
+        save_total_limit=_CFG.get("save_total_limit", 2),
+        eval_strategy=args.evaluation_strategy,
+        eval_steps=args.eval_steps,
+        report_to=_CFG.get("report_to", []),
         fp16=not args.debug_tiny,
-        bf16=False,
+        bf16=args.bf16,
         seed=args.seed,
         max_length=args.max_seq_len,
         completion_only_loss=True,

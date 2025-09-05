@@ -18,6 +18,42 @@ epochs: 3
 save_dir: ./lora_out
 seed: 42
 
+# Optional: steps-based control and validation split
+# Set max_steps to a positive number to override epochs; keep -1 to use epochs
+max_steps: -1
+val_split: 0.1
+
+# Data sources (choose one)
+# 1) Local JSONL dataset (default)
+dataset: sample_dataset.jsonl
+# 2) Parquet path produced by datasets_logic/preprocessing scripts
+parquet_path: null
+# 3) Hugging Face dataset id and split (e.g., "grammarly/coedit")
+hf_dataset: null
+hf_split: train
+# Optional filter for CoEdIT-like datasets: only keep rows with matching task (e.g., "gec")
+coedit_task: null
+
+# Runtime
+device_map: auto  # e.g., "auto", "cpu"
+quantization: auto  # one of: auto, bnb_4bit, none
+resume_from_checkpoint: null
+debug_tiny: false
+bf16: false
+
+# Logging / evaluation / saving
+log_level: INFO
+logging_steps: 10
+evaluation_strategy: steps
+eval_steps: 100
+save_steps: 100
+save_total_limit: 2
+report_to: []  # e.g., ["wandb"]
+
+# Training target formatting
+# One of: good_only (default) or structured (Span/Suggestion/Rationale block)
+train_target_format: good_only
+
 prompt_template: |
   We are creating a dataset for writing text fixer, and you are 
   {context_block}
