@@ -50,6 +50,7 @@ import yaml
 # -----------------------------
 CONFIG_PATH = "config.yaml"
 
+
 def _load_config(path: str) -> dict:
     if not os.path.exists(path) or yaml is None:
         return {}
@@ -61,6 +62,7 @@ def _load_config(path: str) -> dict:
             return data
     except Exception:
         return {}
+
 
 _CFG = _load_config(CONFIG_PATH)
 
@@ -174,7 +176,12 @@ def load_tokenizer(model_name: str) -> AutoTokenizer:
     return tok
 
 
-def load_model(model_name: str, debug_tiny: bool, device_map: str = "auto", quantization: str = "auto"):
+def load_model(
+    model_name: str,
+    debug_tiny: bool,
+    device_map: str = "auto",
+    quantization: str = "auto",
+):
     if debug_tiny:
         model = AutoModelForCausalLM.from_pretrained(
             model_name, torch_dtype=torch.float32, device_map=device_map
@@ -300,7 +307,10 @@ def main():
     model_name = TINY_DEBUG_MODEL if args.debug_tiny else args.base_model
     tokenizer = load_tokenizer(model_name)
     model = load_model(
-        model_name, debug_tiny=args.debug_tiny, device_map=args.device_map, quantization=args.quantization
+        model_name,
+        debug_tiny=args.debug_tiny,
+        device_map=args.device_map,
+        quantization=args.quantization,
     )
 
     # Inject LoRA adapters
@@ -320,6 +330,7 @@ def main():
     if args.parquet_path:
         # Expect columns: id, task, instruction, bad, good
         data = load_dataset("parquet", data_files=args.parquet_path, split="train")
+
         def _prep_row_px(ex):
             bad = ex.get("bad", "")
             good = ex.get("good", "")
@@ -338,11 +349,17 @@ def main():
                 "span_token_start": None,
                 "span_token_end": None,
             }
+
         data = data.map(_prep_row_px)
-        keep_cols = [c for c in ["bad", "good", "context", "span_token_start", "span_token_end"] if c in data.column_names]
+        keep_cols = [
+            c
+            for c in ["bad", "good", "context", "span_token_start", "span_token_end"]
+            if c in data.column_names
+        ]
         data = data.remove_columns([c for c in data.column_names if c not in keep_cols])
     elif args.hf_dataset:
         data = load_dataset(args.hf_dataset, split=args.hf_split)
+
         # Map CoEdIT-style fields to our expected schema
         def _prep_row(ex):
             # CoEdIT fields: '_id', 'task', 'src', 'tgt'
@@ -368,11 +385,16 @@ def main():
                 "span_token_start": None,
                 "span_token_end": None,
             }
+
         data = data.map(_prep_row)
         # Drop rows filtered out
         data = data.filter(lambda ex: ex["bad"] is not None and ex["good"] is not None)
         # Keep only necessary columns to reduce memory
-        keep_cols = [c for c in ["bad", "good", "context", "span_token_start", "span_token_end"] if c in data.column_names]
+        keep_cols = [
+            c
+            for c in ["bad", "good", "context", "span_token_start", "span_token_end"]
+            if c in data.column_names
+        ]
         data = data.remove_columns([c for c in data.column_names if c not in keep_cols])
     else:
         data = load_dataset("json", data_files=args.dataset, split="train")
@@ -385,10 +407,17 @@ def main():
         s = ex.get("span_token_start", None)
         e = ex.get("span_token_end", None)
         prompt = build_prompt(bad=bad, context=ctx)
-        completion = build_target_text(good=good, span_start=s, span_end=e, mode=args.train_target_format)
+        completion = build_target_text(
+            good=good, span_start=s, span_end=e, mode=args.train_target_format
+        )
         return {"prompt": prompt, "completion": completion}
 
-    pc_ds = data.map(_to_prompt_completion, remove_columns=[c for c in data.column_names if c not in ["prompt", "completion"]])
+    pc_ds = data.map(
+        _to_prompt_completion,
+        remove_columns=[
+            c for c in data.column_names if c not in ["prompt", "completion"]
+        ],
+    )
 
     # 90/10 split
     split = pc_ds.train_test_split(test_size=0.1, seed=args.seed)

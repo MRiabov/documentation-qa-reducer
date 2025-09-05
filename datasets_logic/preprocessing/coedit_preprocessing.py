@@ -32,6 +32,7 @@ Notes
 - Will skip unavailable splits.
 - Output columns: [id, task, instruction, bad, good]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -117,7 +118,15 @@ def _split_src_batched(batch: dict) -> dict:
     return {"instruction": instructions, "bad": bads}
 
 
-def process_split(split: str, out_dir: str, task_filter: Optional[str], limit: int, shuffle: bool, seed: int, num_proc: int) -> None:
+def process_split(
+    split: str,
+    out_dir: str,
+    task_filter: Optional[str],
+    limit: int,
+    shuffle: bool,
+    seed: int,
+    num_proc: int,
+) -> None:
     # Attempt to load split; skip if missing
     try:
         ds: Dataset = load_dataset("grammarly/coedit", split=split)
@@ -130,14 +139,18 @@ def process_split(split: str, out_dir: str, task_filter: Optional[str], limit: i
 
     # Optional filter by CoEdIT task
     if task_filter:
-        ds = ds.filter(lambda ex: ex.get("task", None) == task_filter, num_proc=num_proc)
+        ds = ds.filter(
+            lambda ex: ex.get("task", None) == task_filter, num_proc=num_proc
+        )
         LOGGER.info("After task=='%s' filter: %d rows", task_filter, len(ds))
 
     # Split src -> instruction, bad
     ds = ds.map(_split_src_batched, batched=True, num_proc=num_proc)
 
     # Keep minimal columns for downstream
-    keep_cols = [c for c in ["_id", "task", "instruction", "bad", "tgt"] if c in ds.column_names]
+    keep_cols = [
+        c for c in ["_id", "task", "instruction", "bad", "tgt"] if c in ds.column_names
+    ]
     ds = ds.remove_columns([c for c in ds.column_names if c not in keep_cols])
 
     # Rename for clarity: _id -> id, tgt -> good
@@ -165,7 +178,10 @@ def process_split(split: str, out_dir: str, task_filter: Optional[str], limit: i
 
 def main() -> None:
     args = parse_args()
-    logging.basicConfig(level=getattr(logging, args.log_level), format="%(asctime)s %(levelname)s: %(message)s")
+    logging.basicConfig(
+        level=getattr(logging, args.log_level),
+        format="%(asctime)s %(levelname)s: %(message)s",
+    )
 
     splits = [s.strip() for s in args.splits.split(",") if s.strip()]
     if not splits:

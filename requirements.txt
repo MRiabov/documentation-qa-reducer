@@ -10,3 +10,8 @@ ruff
 pyarrow
 pyyaml
 tqdm
+trl
+torch
+protobuf
+tiktoken
+blobfile

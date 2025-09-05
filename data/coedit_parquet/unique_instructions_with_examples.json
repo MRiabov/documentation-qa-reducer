@@ -1,0 +1,1757 @@
+[
+  {
+    "unique_instruction": "Fix all grammatical errors",
+    "examples": [
+      {
+        "id": "7147",
+        "task": "gec",
+        "bad": "Luckily it was my colleague Jane who wanted to drink a cp of fresh coffee with me.",
+        "good": "Luckily, it was my colleague Jane who wanted to drink a cup of fresh coffee with me."
+      },
+      {
+        "id": "4519",
+        "task": "gec",
+        "bad": "Therefore if the engineers of Titanic were prudent in the engineering design process, they would have included a high margin of safety factor to anticipate possible failure during the construction of Titanic.",
+        "good": "Therefore if the engineers of the Titanic had been prudent in the engineering design process, they would have included a high margin of safety factor to anticipate possible failure during its construction."
+      },
+      {
+        "id": "6574",
+        "task": "gec",
+        "bad": "Have you drank under the legal drinking age in this past month?",
+        "good": "Have you drunk under the legal drinking age in this past month?"
+      },
+      {
+        "id": "2607",
+        "task": "gec",
+        "bad": "In comparison with fossil fuels, renewable fuels will be much cheaper and more stable due to their wide availability no freight cost.",
+        "good": "In comparison with fossil fuels, renewable fuels will be much cheaper and more stable due to their wide availability without freight cost."
+      },
+      {
+        "id": "9010",
+        "task": "gec",
+        "bad": "In contrast, some people think that the computer is just one more invention in the history of humanity, and although they accept that is an important invention and changes the world, they prefer to say that exist inventions more important than the computer that nowadays we still use.",
+        "good": "In contrast, some people think that the computer is just one more invention in the history of humanity, and although they accept that it is an important invention and changes the world, they prefer to say that there exist inventions more important than the computer that we still use nowadays."
+      },
+      {
+        "id": "5649",
+        "task": "gec",
+        "bad": "Yet, not everyone might have freedom to do so, fearing that family members might not be able to accept the news.",
+        "good": "Yet, not everyone might have the freedom to do so, fearing that family members might not be able to accept the news."
+      },
+      {
+        "id": "668",
+        "task": "gec",
+        "bad": "While some suggest that the use of this technology brings benefits to both country and the world, it in fact not only affects the country's safety but also the citizens' privacy in the country.",
+        "good": "While some suggest that the use of this technology brings benefits to both the country and the world, it, in fact, affects not only the country's safety but also the citizens' privacy in the country."
+      },
+      {
+        "id": "4214",
+        "task": "gec",
+        "bad": "The use of multi-pass flows system in the SCWR allows the production of process heat on demand and improves the thermal efficiency.",
+        "good": "The use of the multi-pass flows system in the SCWR allows the production of process heat on demand and improves thermal efficiency."
+      },
+      {
+        "id": "4827",
+        "task": "gec",
+        "bad": "The behavior of operators should be anticipated and thus engineers could have reduced the complexity of task by providing short and efficient procedure guidelines.",
+        "good": "The behavior of operators should be anticipated, and thus, engineers could have reduced the complexity of the task by providing short and efficient procedure guidelines."
+      },
+      {
+        "id": "1874",
+        "task": "gec",
+        "bad": "Government may also spend the amount in development where it can attract foreign talents to the country to solve the problems of manpower shortage.",
+        "good": "The Government may also spend the amount on development where it can attract foreign talents to the country to solve the problems of manpower shortage."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix disfluencies in the sentence",
+    "examples": [
+      {
+        "id": "16095",
+        "task": "gec",
+        "bad": "To morrow I'll go to gym and take a spinning class and a muscle workout class.",
+        "good": "Tomorrow I'll go to my gym and take a spinning class and a muscle workout class."
+      },
+      {
+        "id": "14291",
+        "task": "gec",
+        "bad": "Sales assistants are needed in Sales dept.",
+        "good": "Sales assistants are needed in the Sales dept."
+      },
+      {
+        "id": "4802",
+        "task": "gec",
+        "bad": "From this point of view, the further research and development funding is also needed.",
+        "good": "From this point of view, further research and development funding is also needed."
+      },
+      {
+        "id": "666",
+        "task": "gec",
+        "bad": "In conclusion, individuals should not have the final say in revealing their genetic test results for the benefits of the people around them.",
+        "good": "In conclusion, individuals should not have the final say in revealing their genetic test results for the benefit of the people around them."
+      },
+      {
+        "id": "14788",
+        "task": "gec",
+        "bad": "If you know, please tell me it.",
+        "good": "If you know one, please tell it to me."
+      },
+      {
+        "id": "2322",
+        "task": "gec",
+        "bad": "If we limit the amount the government pays, the additional cost falls on the shoulders of the family members which will then be shifted back to the government by family in other means.",
+        "good": "If we limit the amount the government pays, the additional cost falls on the shoulders of the family members, which will then be shifted back to the government by the family in other means"
+      },
+      {
+        "id": "12920",
+        "task": "gec",
+        "bad": "I think quite few scientists still surprise us, and the house of the future will go beyond the limits of our imagination.",
+        "good": "I think quite a few scientists still surprise us, and the house of the future will go beyond the limits of our imagination."
+      },
+      {
+        "id": "4586",
+        "task": "gec",
+        "bad": "High construction is offset not only by multiple construction options, but also by efficient utilization of fuel resources.",
+        "good": "High construction cost is offset not only by multiple construction options but also by efficient utilization of fuel resources."
+      },
+      {
+        "id": "5246",
+        "task": "gec",
+        "bad": "Therefore, we cannot stop the research and development process if we want to continue to have a better energy source",
+        "good": "Therefore, we cannot stop the research and development process if we want to continue to have a better energy source."
+      },
+      {
+        "id": "2471",
+        "task": "gec",
+        "bad": "In the context of the elderly, the reason why government has to spend a lot of money on them is due to the fact that children nowadays are abandoning their parents either in hospitals or old folk homes.",
+        "good": "In the context of the elderly, the reason why the government has to spend a lot of money on them is due to the fact that children nowadays are abandoning their parents either in hospitals or old folk homes."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix errors in this text",
+    "examples": [
+      {
+        "id": "1136",
+        "task": "gec",
+        "bad": "Firstly, building of new community hospitals provide intermediate healthcare for elderly who do not require consultation from the general hospitals.",
+        "good": "Firstly, the building of new community hospitals provides intermediate healthcare for the elderly who do not require consultation from the general hospitals."
+      },
+      {
+        "id": "15514",
+        "task": "gec",
+        "bad": "But, Three o'clock is not a object, I guess it is an abstract concept.",
+        "good": "But, Three o'clock is not an object; I guess it is an abstract concept."
+      },
+      {
+        "id": "11707",
+        "task": "gec",
+        "bad": "For example, what about going for some walks across the countryside or renting a bike?",
+        "good": "For example, what about going for some walks in the countryside or renting a bike?"
+      },
+      {
+        "id": "6495",
+        "task": "gec",
+        "bad": "Although now that the holidays are coming you need people to help and ride the amusement park or the lights of the fair.",
+        "good": "Although now that the holidays are coming, they need people to help and ride the amusement park or work the lights of the fair."
+      },
+      {
+        "id": "18498",
+        "task": "gec",
+        "bad": "Though we often forget it, I think it's happy for us to have equally opportunity to study.",
+        "good": "Though we often forget it, I think it's a happy blessing for us to have an equal opportunity to study."
+      },
+      {
+        "id": "4623",
+        "task": "gec",
+        "bad": "Given the gloom forecast on global warming due to the environmental impacts caused by greenhouse gases, it is not surprising that countries are turning towards nuclear energy as an alternative.",
+        "good": "Given the gloomy forecast on global warming due to the environmental impacts caused by greenhouse gases, it is not surprising that countries are turning towards nuclear energy as an alternative."
+      },
+      {
+        "id": "8829",
+        "task": "gec",
+        "bad": "In conclusion, my main problem is the concern about how safe is the means of transport that I take, so, the train let me to be more relaxed than other ways to travel.",
+        "good": "In conclusion, my main problem is concern about how safe the means of transport that I take is, so the train lets me be more relaxed than other ways to travel."
+      },
+      {
+        "id": "11183",
+        "task": "gec",
+        "bad": "For example, if you want to find someone who likes the same movie genders or series on social media, all you have to do is type in an interest.",
+        "good": "For example, if you want to find someone who likes the same movie genres or series on social media, all you have to do is type in an interest."
+      },
+      {
+        "id": "345",
+        "task": "gec",
+        "bad": "It met the many challenges once faced by people and safety is one of the challenges faced.",
+        "good": "It met many challenges once faced by people, and safety was one of the challenges faced."
+      },
+      {
+        "id": "14482",
+        "task": "gec",
+        "bad": "In the old days I had some favorite musician and used to buy their CDs as soon as they released a new CD.",
+        "good": "In the old days, I had some favorite musicians and used to buy their CDs as soon as they released a new one."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammar",
+    "examples": [
+      {
+        "id": "10201",
+        "task": "gec",
+        "bad": "We go on being friends.",
+        "good": "We will go on being friends."
+      },
+      {
+        "id": "1144",
+        "task": "gec",
+        "bad": "As a result, better healthcare services and facilities are created and have effectively reduced healthcare cost and elderly dependency.",
+        "good": "As a result, better healthcare services and facilities are created, and they have effectively reduced healthcare costs and elderly dependency."
+      },
+      {
+        "id": "13490",
+        "task": "gec",
+        "bad": "I'm going to work in asset management company.",
+        "good": "I'm going to work in an asset management company."
+      },
+      {
+        "id": "9418",
+        "task": "gec",
+        "bad": "I think, that the home of the future will be huge, but single-storey.",
+        "good": "I think that the home of the future will be huge, but single-story."
+      },
+      {
+        "id": "4859",
+        "task": "gec",
+        "bad": "The weight problems were countered easily by properly aligned the batteries such that the weight will give more stability to the EV.",
+        "good": "The weight problems were countered easily by properly aligning the batteries such that the weight would give more stability to the EV."
+      },
+      {
+        "id": "7571",
+        "task": "gec",
+        "bad": "Three times a week garbage trucks pass to empty them, and once a week a garbage collector passes to clean up the streets.",
+        "good": "Three times a week, garbage trucks come to empty them, and once a week, a garbage collector comes to clean up the streets."
+      },
+      {
+        "id": "6202",
+        "task": "gec",
+        "bad": "I am not saying that we should always play chess as physical activities are also important.",
+        "good": "I am not saying that we should always play chess, as physical activities are also important."
+      },
+      {
+        "id": "1157",
+        "task": "gec",
+        "bad": "Singapore being an island represented by a little red dot on the world map requires strong military defense as a form of deterrence against our potential aggressors.",
+        "good": "Singapore, being an island represented by a little red dot on the world map, requires strong military defense as a form of deterrence against our potential aggressors."
+      },
+      {
+        "id": "14501",
+        "task": "gec",
+        "bad": "It was very short time.",
+        "good": "It was a very short time."
+      },
+      {
+        "id": "13610",
+        "task": "gec",
+        "bad": "I applied for a passport last monday, and it can pick up today.",
+        "good": "I applied for a passport last Monday, and I can pick it up today."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammar errors",
+    "examples": [
+      {
+        "id": "11020",
+        "task": "gec",
+        "bad": "It was amazing event!",
+        "good": "It was an amazing event!"
+      },
+      {
+        "id": "6135",
+        "task": "gec",
+        "bad": "On the wall there are some pictures of my family, but I don't nave any posters.",
+        "good": "On the wall, there are some pictures of my family, but I don't have any posters."
+      },
+      {
+        "id": "3460",
+        "task": "gec",
+        "bad": "With current DNA technology, it has proven insufficient to precede any faster.",
+        "good": "With current DNA technology, it has proven insufficient to proceed any faster."
+      },
+      {
+        "id": "10776",
+        "task": "gec",
+        "bad": "He went to coffee shop.",
+        "good": "He went to a coffee shop."
+      },
+      {
+        "id": "16875",
+        "task": "gec",
+        "bad": "In taiwan, overtime work under certain hours is exempt from",
+        "good": "In Taiwan, overtime work under certain hours is exempt from income tax."
+      },
+      {
+        "id": "17513",
+        "task": "gec",
+        "bad": "I would want to ask the prime minister how the government deals with the problem.",
+        "good": "I would want to ask the prime minister how the government deals will deal with the problem."
+      },
+      {
+        "id": "151",
+        "task": "gec",
+        "bad": "The shortage of natural resources mean that all raw materials required for engineering design process for innovations would have to come from import.",
+        "good": "The shortage of natural resources means that all raw materials required for the engineering design process for innovations would have to come from imports."
+      },
+      {
+        "id": "12317",
+        "task": "gec",
+        "bad": "I profoundly comprehend the theoretical ascertainment for this career, which is that international trade requires rational economic decisions with legally binding consequences.",
+        "good": "I profoundly grasp the theoretical ascertainment for this career, which is that international trade requires rational economic decisions with legally binding consequences."
+      },
+      {
+        "id": "12620",
+        "task": "gec",
+        "bad": "Given my strong academic background and my leadership experiences at university, including the completion of Manchester Leadership Programme, I believe I am a strong candidate for this position. I enclose a copy of my CV and hope very much to be invited for interview.",
+        "good": "Given my strong academic background and my leadership experiences at the university, including the completion of the Manchester Leadership Programme, I believe I am a strong candidate for this position. I enclose a copy of my CV and hope very much to be invited for an interview."
+      },
+      {
+        "id": "13625",
+        "task": "gec",
+        "bad": "I wanted to understand me.",
+        "good": "I wanted them to understand me."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammar errors in this sentence",
+    "examples": [
+      {
+        "id": "9975",
+        "task": "gec",
+        "bad": "Finally, scientists hypothesize that our brains are helpful enough when we can helping out other people.",
+        "good": "Finally, scientists hypothesize that our brains are helpful enough when we can help out other people."
+      },
+      {
+        "id": "6082",
+        "task": "gec",
+        "bad": "On important occasions, when there are a large number of people involved, it is nearly impossible for police and security stuffs to identify the criminals when crime occurs.",
+        "good": "On important occasions, when there are a large number of people involved, it is nearly impossible for police and security staff to identify the criminals when a crime occurs."
+      },
+      {
+        "id": "14839",
+        "task": "gec",
+        "bad": "The office of apartment where I live now notified that they are going to raise rent and to charge for water, sewer, and trash remover.",
+        "good": "The office of the the apartment where I live now notified me that they are going to raise the rent and charge for water, sewer, and trash remover."
+      },
+      {
+        "id": "16237",
+        "task": "gec",
+        "bad": "If we have some choices and each of us has different preference, we can't choice the best way to satisfy all of us automatically.",
+        "good": "If we have some choices and each of us has different preferences, we can't choose the best way to satisfy all of us automatically."
+      },
+      {
+        "id": "3049",
+        "task": "gec",
+        "bad": "These two resources are restricted by the geographical position and climate.",
+        "good": "These two resources are restricted by geographical position and climate."
+      },
+      {
+        "id": "1639",
+        "task": "gec",
+        "bad": "Government has also promised to build more studio apartments in the upcoming projects.",
+        "good": "The government has also promised to build more studio apartments in the upcoming projects."
+      },
+      {
+        "id": "11014",
+        "task": "gec",
+        "bad": "When they were in Sweden I was on their concert and after that my voice were almost gone.",
+        "good": "When they were in Sweden, I was at their concert, and after that, my voice was almost gone."
+      },
+      {
+        "id": "4502",
+        "task": "gec",
+        "bad": "Moreover, waste reprocessing is expensive and fuel consuming as it requires continuous burning of the wastes.",
+        "good": "Moreover, waste reprocessing is expensive and fuel consumption as it requires continuous burning of the wastes"
+      },
+      {
+        "id": "5598",
+        "task": "gec",
+        "bad": "There are many composites that make up a socially and politically stable country.",
+        "good": "There are many that make up a socially and politically stable country."
+      },
+      {
+        "id": "6499",
+        "task": "gec",
+        "bad": "To my mind this mind not right.",
+        "good": "To my mind, this is not right."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammar in the sentence",
+    "examples": [
+      {
+        "id": "11197",
+        "task": "gec",
+        "bad": "Impregnation as a result of sexual abuse is not uncommon and in these cases abortion should be a choice.",
+        "good": "Conception as a result of sexual abuse is not uncommon, and in these cases, abortion should be a choice."
+      },
+      {
+        "id": "4773",
+        "task": "gec",
+        "bad": "LFR is a more portable option, thus more resistant against terrorism and weapon conversion since it is too stable to become a destructive tool anyway.",
+        "good": "LFR is a more portable option, thus more resistant to terrorism and weapon conversion since it is too stable to become a destructive tool."
+      },
+      {
+        "id": "4927",
+        "task": "gec",
+        "bad": "However, many of these arguments are based on the short run expenditure that one would face when building a nuclear power plant.",
+        "good": "However, many of these arguments are based on the short-run expenditure that one would face when building a nuclear power plant."
+      },
+      {
+        "id": "2540",
+        "task": "gec",
+        "bad": "Since there are definitely other ways to cope with aging population, governments should allocate its funds to other areas that are more urgent.",
+        "good": "Since there are definitely other ways to cope with aging populations, governments should allocate their funds to other areas that are more urgent."
+      },
+      {
+        "id": "15079",
+        "task": "gec",
+        "bad": "Can you please tell me how to learn and practice it?",
+        "good": "Can you please tell me how to learn and practice this?"
+      },
+      {
+        "id": "14489",
+        "task": "gec",
+        "bad": "I was very excited about Japanese soccer match last night.",
+        "good": "I was very excited about the Japanese soccer match last night."
+      },
+      {
+        "id": "13053",
+        "task": "gec",
+        "bad": "Kachl's Park is a perfact place to spend some time walking along paths, sitting on a bench, talking to each other.",
+        "good": "Kachl's Park is a perfect place to spend some time walking along paths, sitting on a bench, and talking to each other."
+      },
+      {
+        "id": "4743",
+        "task": "gec",
+        "bad": "Psychology in design processes, whose significance has been showed in this accident, should be paid more attention to in the future engineering design.",
+        "good": "Psychology in design processes, whose significance has been showing in this accident, should be paid more attention to in future engineering design."
+      },
+      {
+        "id": "5717",
+        "task": "gec",
+        "bad": "All in all, individuals have the rights to conceal their genetic test results in order to protect own privacy.",
+        "good": "All in all, individuals have the right to conceal their genetic test results in order to protect their own privacy."
+      },
+      {
+        "id": "9578",
+        "task": "gec",
+        "bad": "If technology is leading to those kinds of consequences, we should start to realise how to use technology properly without needing to eliminate it.",
+        "good": "If technology is leading to those kinds of consequences, we should start to understand how to use technology properly without needing to eliminate it."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammar in this sentence",
+    "examples": [
+      {
+        "id": "7086",
+        "task": "gec",
+        "bad": "The great number of using private car leads to higher level of air pollution, and the public transport is one of the best solutions for decreasing the air pollution.",
+        "good": "The great number of people using private cars leads to higher levels of air pollution, and public transport is one of the best solutions for decreasing air pollution."
+      },
+      {
+        "id": "5606",
+        "task": "gec",
+        "bad": "Such demographic changes might bring about severe consequences, most importantly national budgets might be under pressure as growing number of elderly persons are supported fewer younger persons.",
+        "good": "Such demographic changes might bring about severe consequences, and most importantly, national budgets might be under pressure as a growing number of elderly persons are supported by fewer younger persons."
+      },
+      {
+        "id": "11657",
+        "task": "gec",
+        "bad": "In the past people used technology as a tool for making survival an easier endeavor.",
+        "good": "In the past, people used technology as a tool for making survival an easier endeavor."
+      },
+      {
+        "id": "1033",
+        "task": "gec",
+        "bad": "This helps them realize that they still stand a foothold in the society as they can still contribute to the nation and economic growth, therefore helping them to lead an enriching and fulfilling life.",
+        "good": "This helps them realize that they still have a foothold in society as they can still contribute to the nation and economic growth, thereby helping them to lead an enriching and fulfilling life."
+      },
+      {
+        "id": "7678",
+        "task": "gec",
+        "bad": "The power of imagination makes him become a teacher: he has to show men how to understand their feelings and the nature that surround them.",
+        "good": "The power of imagination makes him become a teacher: he has to show men how to understand their feelings and the nature that surrounds them."
+      },
+      {
+        "id": "18357",
+        "task": "gec",
+        "bad": "I was very nervous at first because I thought my English is very terrible.",
+        "good": "I was very nervous at first because I thought my English was terrible."
+      },
+      {
+        "id": "1513",
+        "task": "gec",
+        "bad": "Government should spend more on transportation by providing more facilities for the disable and poor.",
+        "good": "The government should spend more on transportation by providing more facilities for the disabled and poor."
+      },
+      {
+        "id": "19753",
+        "task": "gec",
+        "bad": "I have a dog, a great dog!",
+        "good": "I have a dog-a great dog!"
+      },
+      {
+        "id": "10242",
+        "task": "gec",
+        "bad": "I did everything by myself because everyone had sometihng to do on their own.",
+        "good": "I did everything by myself because everyone had something to do on their own."
+      },
+      {
+        "id": "680",
+        "task": "gec",
+        "bad": "Advocators suggest that using RFID to conduct social control and suspects tracking could benefit whole society.",
+        "good": "Advocators suggest that using RFID to conduct social control and tracking suspects could benefit the whole of society."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammatical errors",
+    "examples": [
+      {
+        "id": "3705",
+        "task": "gec",
+        "bad": "Although this scheme does not provide 100% coverage on their medical bills, patients will have a lesser burden when majority of the medical bills are heavily subsided by The Government and supported by Medisave.",
+        "good": "Although this scheme does not provide 100% coverage on their medical bills, patients will have a smaller burden when the majority of the medical bills are heavily subsidized by the government and supported by Medisave."
+      },
+      {
+        "id": "12023",
+        "task": "gec",
+        "bad": "Such a standardised educational system for every single person on the world would therefore not only benefit the communication or existing businesses but also help third-world countries to start companies, trade and industrialise their countries so they can take care of themselves and emerge out of poverty.",
+        "good": "Such a standardized educational system for every single person in the world would, therefore, not only benefit communication or existing businesses but also help third-world countries to start companies, trade, and industrialize their countries so they can take care of themselves and get out of poverty."
+      },
+      {
+        "id": "18780",
+        "task": "gec",
+        "bad": "I left for a station quickly so I could get in the train in time.",
+        "good": "I left for a station quickly, so I could get on the train in time."
+      },
+      {
+        "id": "1840",
+        "task": "gec",
+        "bad": "Thus, public spending on the elderly does provide important benefits to the country and should not be limited thus.",
+        "good": "Thus, public spending on the elderly does provide important benefits to the country and should not be limited."
+      },
+      {
+        "id": "18806",
+        "task": "gec",
+        "bad": "They can send to the address without zip code.",
+        "good": "They can send mail to the address without a zip code."
+      },
+      {
+        "id": "9126",
+        "task": "gec",
+        "bad": "To sum up, the professor totally disagree with the statement in the reading passage.",
+        "good": "To sum up, the professor totally disagrees with the statement in the reading passage."
+      },
+      {
+        "id": "8847",
+        "task": "gec",
+        "bad": "She explains that in the process of purefication, a big amount of coal and oil is burned, which pollutes factories rather than the environment.",
+        "good": "She explains that in the process of purification, a large amount of coal and oil is burned, which pollutes factories rather than the environment."
+      },
+      {
+        "id": "3164",
+        "task": "gec",
+        "bad": "To move the distractions, it needs to apply certain regulars to retain the talent in their positions and also, improve the treatment of research jobs.",
+        "good": "To move the distractions, it needs to apply certain regulations to retain the talent in their positions and also improve the terms of research jobs."
+      },
+      {
+        "id": "5557",
+        "task": "gec",
+        "bad": "Hence limitation on public spending on the aged should not be implemented, given the fact that the aged makes up a quarter of the population.",
+        "good": "Hence limitation on public spending on the aged should not be implemented given the fact that the aged make up a quarter of the population."
+      },
+      {
+        "id": "19305",
+        "task": "gec",
+        "bad": "I read a shocking news today.",
+        "good": "I read a shocking news article today."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammatical errors in this sentence",
+    "examples": [
+      {
+        "id": "14972",
+        "task": "gec",
+        "bad": "I do EVERYTHING both what I am supposed to do and what I am not.",
+        "good": "I do EVERYTHING, both what I am supposed to do and what I am not."
+      },
+      {
+        "id": "19444",
+        "task": "gec",
+        "bad": "Made me laugh so hard.",
+        "good": "It made me laugh so hard."
+      },
+      {
+        "id": "10811",
+        "task": "gec",
+        "bad": "In the North of Spain the weather is colder than the rest of the country, for this reason, the water of the beaches is very cold and it is very difficult to swim there.",
+        "good": "In the North of Spain, the weather is colder than in the rest of the country. For this reason, the water at the beaches is very cold, and it is very difficult to swim there."
+      },
+      {
+        "id": "17113",
+        "task": "gec",
+        "bad": "One of my friend is an illustrator and she needs her English profile.",
+        "good": "One of my friends is an illustrator, and she needs her profile done in English."
+      },
+      {
+        "id": "18519",
+        "task": "gec",
+        "bad": "I packed up my luggage and got out of function center.",
+        "good": "I packed up my luggage and got out of the function center."
+      },
+      {
+        "id": "5008",
+        "task": "gec",
+        "bad": "Another factor is that SWCR only can react under the very high pressure.",
+        "good": "Another factor is that SWCR only can react under very high pressure."
+      },
+      {
+        "id": "8830",
+        "task": "gec",
+        "bad": "It's a sport where two teams play on a court, which is separated for a central net.",
+        "good": "It's a sport where two teams play on a court, which is separated by a central net."
+      },
+      {
+        "id": "13559",
+        "task": "gec",
+        "bad": "During the new year, I will learn English work hard!",
+        "good": "During the new year, I will learn English and work hard!"
+      },
+      {
+        "id": "13777",
+        "task": "gec",
+        "bad": "My eyes feel itchy and my nose are runny even with mask.",
+        "good": "My eyes feel itchy, and my nose is runny even with a mask."
+      },
+      {
+        "id": "2804",
+        "task": "gec",
+        "bad": "And there are still a lot of aspects that contribute to technology as well.",
+        "good": "In addition, there are still a lot of aspects that contribute to technology as well."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammatical mistakes in this sentence",
+    "examples": [
+      {
+        "id": "14584",
+        "task": "gec",
+        "bad": "My English is too bad, so there will be many errors.",
+        "good": "My English is too quite bad, so there will be many errors."
+      },
+      {
+        "id": "15337",
+        "task": "gec",
+        "bad": "And we was able to use the new telephone before noon.",
+        "good": "And We were able to use the new telephone before noon."
+      },
+      {
+        "id": "6373",
+        "task": "gec",
+        "bad": "overall, in both years, the amount of earnings allocation predominantly from Housing then followed by food/clothes.",
+        "good": "Overall, in both years, the amount of earnings allocation was predominantly for housing, then followed by food/clothes."
+      },
+      {
+        "id": "17318",
+        "task": "gec",
+        "bad": "Sometimes it's quite hard to get a good pot for viewing, so some people even stay overnight to get the perfect one.",
+        "good": "Sometimes it's quite hard to get a good spot for viewing, so some people even stay overnight to get the perfect one."
+      },
+      {
+        "id": "3315",
+        "task": "gec",
+        "bad": "Ice from mountains or snowy areas were transported to warmer regions where it was wrapped in cloth and placed in cellas.",
+        "good": "Ice from mountains or snowy areas was transported to warmer regions where they were wrapped in cloth and placed in cells."
+      },
+      {
+        "id": "8345",
+        "task": "gec",
+        "bad": "All in all, I suppose a lot of people disagree with this subject because it is not a good idea for them, but in my opinion it is a really good idea to save other people's lives by taking stem cells from an aborted foetus.",
+        "good": "All in all, I suppose a lot of people disagree with this subject because it is not a good idea for them, but in my opinion, it is a really good idea to save other people's lives by taking stem cells from an aborted fetus."
+      },
+      {
+        "id": "8479",
+        "task": "gec",
+        "bad": "On the other hand, if it is rainy, the cold water cools it down and make one feel less tired during one's time.",
+        "good": "On the other hand, if it is rainy, the cold water cools one down and makes one feel less tired during one's time running."
+      },
+      {
+        "id": "3901",
+        "task": "gec",
+        "bad": "Although spending on the aged should be limited so that more money can be channelled for the county's development, we should also make sure that a reasonable portion of annual budget is set aside for them.",
+        "good": "Although spending on the aged should be limited so that more money can be channeled for the county's development, we should also make sure that a reasonable portion of the annual budget is set aside for them."
+      },
+      {
+        "id": "3977",
+        "task": "gec",
+        "bad": "One of the policies that had been introduced is the housing policy such as lift upgrading, elderly fitness corner and studio apartments.",
+        "good": "One of the policies that have been introduced is the housing policies such as lift upgrading, elderly fitness corner, and studio apartments."
+      },
+      {
+        "id": "10956",
+        "task": "gec",
+        "bad": "Public transport has been discussed enough but there is always space for further discussion.",
+        "good": "Public transport has been discussed enough, but there is always room for further discussion."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammaticality",
+    "examples": [
+      {
+        "id": "11200",
+        "task": "gec",
+        "bad": "In order to prevent this, it is important to apply strict guidelines regarding situation where abortion is given as an option.",
+        "good": "In order to prevent this, it is important to apply strict guidelines regarding situations where abortion is given as an option."
+      },
+      {
+        "id": "6828",
+        "task": "gec",
+        "bad": "It is difficult to imagine how we can live without it.",
+        "good": "It is difficult to imagine how we could live without it."
+      },
+      {
+        "id": "13634",
+        "task": "gec",
+        "bad": "I want to try to write english diary.",
+        "good": "I want to try to write an English diary."
+      },
+      {
+        "id": "12095",
+        "task": "gec",
+        "bad": "At the beginning it was really difficult to me because I was a little shy with customers and I wasn't used to working among noisy machinery and shouting workers, but after a while time I learned to ignore all of that!",
+        "good": "In the beginning, it was really difficult for me because I was a little shy with customers and I wasn't used to working with noisy machinery and shouting workers, but after a while, I learned to ignore all of that!"
+      },
+      {
+        "id": "1830",
+        "task": "gec",
+        "bad": "Hence, providing sustainable solutions to the aging problem have to start by tackling the root cause of the problem, that is looking at the children who is supposed to take care of them.",
+        "good": "Hence, sustainable solutions to the aging problem start by tackling the root cause of the problem, that is, looking at the children who are supposed to be taking care of them."
+      },
+      {
+        "id": "14251",
+        "task": "gec",
+        "bad": "I like paprika very much, and after cutting into sticks, nibbling them like a rabbit is my favorite way to eat.",
+        "good": "I like bell peppers very much, and after cutting them into sticks, nibbling them like a rabbit is my favorite way to eat them."
+      },
+      {
+        "id": "9156",
+        "task": "gec",
+        "bad": "The course will give your young visitors not only a lot of fun but also a general knowledge about Polish culture and eating habits as well.",
+        "good": "The course will give your young visitors not only a lot of fun but also a general knowledge of Polish culture and eating habits as well."
+      },
+      {
+        "id": "16959",
+        "task": "gec",
+        "bad": "Doraemon already ended long time ago.",
+        "good": "Doraemon had already ended a long time ago."
+      },
+      {
+        "id": "15977",
+        "task": "gec",
+        "bad": "It's my father's,",
+        "good": "It's my father's."
+      },
+      {
+        "id": "16397",
+        "task": "gec",
+        "bad": "As a result they are above the law.",
+        "good": "As a result, they are above the law."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammaticality in this sentence",
+    "examples": [
+      {
+        "id": "15760",
+        "task": "gec",
+        "bad": "One day she asked the owner of her apartment to know the neighber.",
+        "good": "One day, she asked the owner of her apartment questions to know about the neighbor."
+      },
+      {
+        "id": "9684",
+        "task": "gec",
+        "bad": "Each character in this play, who is able to do magic, uses it in a different way, for example: to help; for their own need.",
+        "good": "Each character in this play which is able to do magic uses it in a different way. For example: to help; with their own needs."
+      },
+      {
+        "id": "11209",
+        "task": "gec",
+        "bad": "This is what, in my opinion, must be changed in schools to satisfy the society necessities and overcome the old and inappropriate \"out-of-date\" system.",
+        "good": "This is what, in my opinion, must be changed in schools to satisfy society's needs and overcome the old and inappropriate \"out-of-date\" system."
+      },
+      {
+        "id": "1415",
+        "task": "gec",
+        "bad": "Although some might argue that increasing the fund just targets at providing for the aged, by looking at the bigger picture, the improved healthcare system provides for all.",
+        "good": "Although some might argue that increasing healthcare funding just targets providing for the aged, by looking at the bigger picture, one will see that the improved healthcare system provides for all."
+      },
+      {
+        "id": "6519",
+        "task": "gec",
+        "bad": "That is all I can tell you about this place. I hope tath my answer will help you with your project.",
+        "good": "That is all I can tell you about this place. I hope that my answer will help you with your project."
+      },
+      {
+        "id": "8870",
+        "task": "gec",
+        "bad": "Actually, they want to describe the history of discovery and conquest by a critical perspective but while shooting the film, appear some protests against the privatization of water and the team fall into a chaos and then film starting to give some social, politic messages.",
+        "good": "Actually, they want to describe the history of discovery and conquest from a critical perspective, but while shooting the film, there are some protests against the privatization of water, and the team fall into chaos, then the film starts to give some social and political messages."
+      },
+      {
+        "id": "12470",
+        "task": "gec",
+        "bad": "But at the same time we are working against Nature-let's think of pollution and climate change-and against our own human nature: distress, allergies, strokes and heart attacks are nowadays more and more frequent.",
+        "good": "But at the same time, we are working against nature let's think of pollution and climate change-and against our own human nature: distress, allergies, strokes, and heart attacks are more and more frequent nowadays."
+      },
+      {
+        "id": "2078",
+        "task": "gec",
+        "bad": "Although the current social policies can help to build up the financial capability of the aging population and make their aging process easier, there remain a group unprotected.",
+        "good": "Although the current social policies can help to build up the financial capability of the aging population and make their aging process easier, there remains an unprotected group."
+      },
+      {
+        "id": "2127",
+        "task": "gec",
+        "bad": "Generally, the government would have enough budgets to empower the stable development of the country, and to maintain the welfare and pension system at an acceptable level.",
+        "good": "Generally, the government would have enough budget to empower the stable development of the country and to maintain the welfare and pension system at an acceptable level."
+      },
+      {
+        "id": "15755",
+        "task": "gec",
+        "bad": "Allison was just enjoying the time one the runway and trying to do it better.",
+        "good": "Allison was just enjoying her time on the runway and trying to do it better."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix grammaticality of the sentence",
+    "examples": [
+      {
+        "id": "15595",
+        "task": "gec",
+        "bad": "I made friends with host family.",
+        "good": "I made friends with my host family."
+      },
+      {
+        "id": "14687",
+        "task": "gec",
+        "bad": "I went to see my family physician and consulted him about the result of the medical check.",
+        "good": "I went to see my family physician and consulted him about the result of my medical check."
+      },
+      {
+        "id": "4525",
+        "task": "gec",
+        "bad": "In addition to this it can also be suited to provide hydrogen upon further modifications.",
+        "good": "In addition to this, it can also be suited to provide hydrogen upon further modifications."
+      },
+      {
+        "id": "4194",
+        "task": "gec",
+        "bad": "Thus, there are doubts on whether MSR is a good choice.",
+        "good": "Thus, there are doubts about whether the MSR is a good choice."
+      },
+      {
+        "id": "15221",
+        "task": "gec",
+        "bad": "So I start to feel the necessity which I have to solve the problems.",
+        "good": "So I started to feel the necessity which I have to solve the problems."
+      },
+      {
+        "id": "18265",
+        "task": "gec",
+        "bad": "My favorite is to play with my puppy.",
+        "good": "My favorite activity is to play with my puppy."
+      },
+      {
+        "id": "15714",
+        "task": "gec",
+        "bad": "If he could use the computer, I didn't have to do that, I mean, I wouldn't be needed.",
+        "good": "If he could use the computer, I wouldn't have to do that; I mean, I wouldn't be needed."
+      },
+      {
+        "id": "5718",
+        "task": "gec",
+        "bad": "In addition to the importance of sharing genetic test results to reduce disease risk and practise family planning, support but not discrimination by family is the foremost form of assistance to those are tested positive for genetic diseases during their illness.",
+        "good": "In addition to the importance of sharing genetic test results to reduce disease risk and practice family planning, support but not discrimination by family is the foremost form of assistance to those who tested positive for genetic diseases during their illness."
+      },
+      {
+        "id": "11463",
+        "task": "gec",
+        "bad": "Nonetheless, there are some disadvantages. If a person possesses the magic power that is too powerful for others to defend themselves from, he or she can basically rule the world.",
+        "good": "Nonetheless, there are some disadvantages. If a person possesses a magic power that is too powerful for others to defend themselves against, he or she can basically rule the world."
+      },
+      {
+        "id": "931",
+        "task": "gec",
+        "bad": "It's essential that they learn how to not only manage their wealth but also expand it so that when they choose to stop working, they would have enough money to pay for their necessities and have enough for any unexpected expenses.",
+        "good": "It is essential that they learn how to not only manage their wealth but also expand it so that when they choose to stop working, they will have enough money to pay for their necessities and have enough for any unexpected expenses."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix the grammar mistakes",
+    "examples": [
+      {
+        "id": "5072",
+        "task": "gec",
+        "bad": "First of all, according to the table, the MSRs are safer to operate and maintain than most of other reactors.",
+        "good": "First of all, according to the table, the MSRs are safer to operate and maintain than most of the other reactors."
+      },
+      {
+        "id": "4915",
+        "task": "gec",
+        "bad": "Safety issue will be handled with extreme care by all GIF member counties.",
+        "good": "Safety issues will be handled with extreme care by all GIF member counties."
+      },
+      {
+        "id": "1813",
+        "task": "gec",
+        "bad": "For instance, facilities such as Day Care Centres and Old Folks Homes will be in high demand as the ratio of elderly to the younger generation is higher in the near future.",
+        "good": "For instance, facilities such as Day Care Centres and Old Folks Homes will be in high demand as the ratio of the elderly to the younger generation becomes higher in the near future."
+      },
+      {
+        "id": "2332",
+        "task": "gec",
+        "bad": "For example, Japan is one of the countries which using the most advanced technology in manufacturing.",
+        "good": "For example, Japan is one of the countries which uses the most advanced technology in manufacturing."
+      },
+      {
+        "id": "11786",
+        "task": "gec",
+        "bad": "However raising a child into a model citizen is extremely hard-working.",
+        "good": "However, raising a child into a model citizen is extremely hard work."
+      },
+      {
+        "id": "9835",
+        "task": "gec",
+        "bad": "After the inquiry Michael was put behind the bars and the girl went away.",
+        "good": "After the inquiry, Michael was put behind bars, and the girl went away."
+      },
+      {
+        "id": "17388",
+        "task": "gec",
+        "bad": "I went to bar in Omiya for the first time.",
+        "good": "I went to a bar in Omiya for the first time."
+      },
+      {
+        "id": "9713",
+        "task": "gec",
+        "bad": "Generally speaking students finish their degrees with a limited range of experience.",
+        "good": "Generally speaking, students finish their degrees with a limited range of experience."
+      },
+      {
+        "id": "7663",
+        "task": "gec",
+        "bad": "If it is unspeakably for public readings, thus mention in the email.",
+        "good": "If it is unspeakably for public readings, thus mention it in the email."
+      },
+      {
+        "id": "16483",
+        "task": "gec",
+        "bad": "Various practitioners, researchers, artists show up and do 18 minutes talks.",
+        "good": "Various practitioners, researchers, and artists show up and do an 18 minutes talk."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Fix the grammatical mistakes",
+    "examples": [
+      {
+        "id": "4660",
+        "task": "gec",
+        "bad": "The final argument purpose by opponents is availability of the coolant of VHTR.",
+        "good": "The final argument by opponents is the availability of the coolant of VHTR."
+      },
+      {
+        "id": "477",
+        "task": "gec",
+        "bad": "However, as argued before, everybody genes may be linked to their relatives' genes, so it is possible for the relatives particularly their sibling to inherit the same defective gene.",
+        "good": "However, as argued before, everybody's genes may be linked to their relatives' genes, so it is possible for the relatives, particularly their siblings, to inherit the same defective gene."
+      },
+      {
+        "id": "10859",
+        "task": "gec",
+        "bad": "Hence, the private vehicles give enough privacy and comfort for a family.",
+        "good": "Hence, private vehicles give enough privacy and comfort for a family."
+      },
+      {
+        "id": "4418",
+        "task": "gec",
+        "bad": "While some proponents totally support further research and development funding for this concept, others still doubt about the benefits of the SCWR since there are many challenging problems in R&D process.",
+        "good": "While some proponents totally support further research and development funding for this concept, others still doubt the benefits of the SCWR since there are many challenging problems in the R&D process."
+      },
+      {
+        "id": "8475",
+        "task": "gec",
+        "bad": "Colombian became the first diver to win a world cup in High-Jumps.",
+        "good": "Colombian became the first diver to win a world cup in the high jump."
+      },
+      {
+        "id": "13089",
+        "task": "gec",
+        "bad": "The young couple of lovers fell on the floor and Michael got away to his home.",
+        "good": "A young couple of lovers fell on the floor, and Michael ran away to his home."
+      },
+      {
+        "id": "1944",
+        "task": "gec",
+        "bad": "The introducing of working-age immigrants also increased the competition in the workforce.",
+        "good": "The introduction of working-age immigrants has also increased the competition in the workforce."
+      },
+      {
+        "id": "7236",
+        "task": "gec",
+        "bad": "This time I felt like a Champion it was really especially feeling.",
+        "good": "This time I felt like a Champion. It was a really special feeling."
+      },
+      {
+        "id": "7951",
+        "task": "gec",
+        "bad": "Famous people definitely deserved to have a private life without journalists following them all the time.",
+        "good": "Famous people definitely deserve to have a private life without journalists following them all the time."
+      },
+      {
+        "id": "5479",
+        "task": "gec",
+        "bad": "Furthermore, due to the depletion of unrenewable energy such as coal and fossil fuel, the scientists in many countries start to seek for a new source of energy, which is nuclear energy.",
+        "good": "Furthermore, due to the depletion of unrenewable energy, such as coal and fossil fuel, scientists in many countries have started to seek a new source of energy, which is nuclear energy."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Grammar improvements",
+    "examples": [
+      {
+        "id": "13213",
+        "task": "gec",
+        "bad": "I have been studying English for several years and I am preparing for taking FCE exam soon.",
+        "good": "I have been studying English for several years, and I am preparing to take the FCE exam soon."
+      },
+      {
+        "id": "8405",
+        "task": "gec",
+        "bad": "You are invited of course.",
+        "good": "You are invited, of course."
+      },
+      {
+        "id": "2016",
+        "task": "gec",
+        "bad": "It seems that the young can shift the liability and solve the financial problem, but these excessive government subsidies will result in draining the public purse quickly.",
+        "good": "It seems that the young can shift the liability and solve the financial problem, but these excessive government subsidies will result in draining the public funds quickly."
+      },
+      {
+        "id": "2257",
+        "task": "gec",
+        "bad": "The various schemes aim to help the SMEs increase their revenue and attract investors through upgrading the existing business operations and creating gateway and funding opportunities.",
+        "good": "The various schemes aim to help the SMEs increase their revenue and attract investors through upgrading the existing business operations and creating a gateway and funding opportunities"
+      },
+      {
+        "id": "16605",
+        "task": "gec",
+        "bad": "It has two sides, dark and bright side.",
+        "good": "It has two sides, a dark and a bright side."
+      },
+      {
+        "id": "17540",
+        "task": "gec",
+        "bad": "During that time, I got used to standing for a long time.",
+        "good": "During that time, I got used to standing for long periods."
+      },
+      {
+        "id": "12800",
+        "task": "gec",
+        "bad": "The task is unambiguous and seemingly easy. I should be able to describe my view of American man and his behavior because of my experience as an adult, a woman, a wife, a mother and simply a human being with various roles in life who has been million times happy and million times unhappy.",
+        "good": "The task is unambiguous and seemingly easy. I should be able to describe my view of an American man and his behavior because of my experience as an adult, a woman, a wife, a mother, and, simply, a human being with various roles in life who have been happy a million times and unhappy a million times."
+      },
+      {
+        "id": "19320",
+        "task": "gec",
+        "bad": "I went to library with my roommate and read a few magazines.",
+        "good": "I went to the library with my roommate and read a few magazines."
+      },
+      {
+        "id": "11582",
+        "task": "gec",
+        "bad": "It would be sufficient to just see the smile on their face.",
+        "good": "It would be sufficient to just see the smile on their faces."
+      },
+      {
+        "id": "16502",
+        "task": "gec",
+        "bad": "I cannot remember completely how did me and my child break away.",
+        "good": "I cannot completely remember completely how did me and my child got to break away."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Improve the grammar of this text",
+    "examples": [
+      {
+        "id": "12818",
+        "task": "gec",
+        "bad": "Since exhaust fumes are considered to be one of the major pollutants nowadays, the local authorities are doing everything in their power in order to induce citizens to travel more by means of public transport, in the detriment of the ubiquitous private cars.",
+        "good": "Since exhaust fumes are considered to be one of the major pollutants nowadays, the local authorities are doing everything in their power in order to encourage citizens to travel more by means of public transport, to the detriment of the ubiquitous private cars."
+      },
+      {
+        "id": "9592",
+        "task": "gec",
+        "bad": "More specifically, it allows for understanding of teamwork, develops organizational skills and practice discipline.",
+        "good": "More specifically, it allows for an understanding of teamwork, develops organizational skills, and practice discipline."
+      },
+      {
+        "id": "18016",
+        "task": "gec",
+        "bad": "But trust is only one.",
+        "good": "But the truth trust is only one."
+      },
+      {
+        "id": "13606",
+        "task": "gec",
+        "bad": "It was very exciting game and this game is the best match ever.",
+        "good": "It was a very exciting game, and this game was the best match ever."
+      },
+      {
+        "id": "6931",
+        "task": "gec",
+        "bad": "Am Melody Martinez, I'm 26 years old, I was born in Mexico.",
+        "good": "I am Melody Martinez. I'm 26 years old. I was born in Mexico."
+      },
+      {
+        "id": "285",
+        "task": "gec",
+        "bad": "In such situation, time is of essence.",
+        "good": "In such a situation, time is of the essence."
+      },
+      {
+        "id": "8603",
+        "task": "gec",
+        "bad": "Anxiousness got the better of him as he prepare himself to enter the sanctuary.",
+        "good": "Anxiousness got the better of him as he prepared himself to enter the sanctuary."
+      },
+      {
+        "id": "17210",
+        "task": "gec",
+        "bad": "If the elevator was closed, then it can't be opened until the next morning because the control room was very far from that building.",
+        "good": "If the elevator was closed, then it couldn't be opened until the next morning because the control room was very far from that building."
+      },
+      {
+        "id": "16427",
+        "task": "gec",
+        "bad": "He worried about my sickness, and invited my family to his home.",
+        "good": "He is worried about my sickness and invited my family to his home."
+      },
+      {
+        "id": "2111",
+        "task": "gec",
+        "bad": "Finally, all in all a country should deal closely with the issues of an aging population.",
+        "good": "Finally, all in all, a country should deal closely with the issues of an aging population."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Improve the grammaticality",
+    "examples": [
+      {
+        "id": "15985",
+        "task": "gec",
+        "bad": "I never give up!",
+        "good": "I would never give up!"
+      },
+      {
+        "id": "16195",
+        "task": "gec",
+        "bad": "I hope my professors know that their student already have lots of homework.",
+        "good": "I hope my professors know that their students already have lots of homework."
+      },
+      {
+        "id": "17372",
+        "task": "gec",
+        "bad": "She mentioned she wanted to talk to me and I kept calling her from yesterday.",
+        "good": "She mentioned she wanted to talk to me, and I kept have been calling her since yesterday."
+      },
+      {
+        "id": "5656",
+        "task": "gec",
+        "bad": "In addition, families can also help in reducing the risk of the next generation.",
+        "good": "In addition, families can also help in reducing the risk for the next generation."
+      },
+      {
+        "id": "7542",
+        "task": "gec",
+        "bad": "Military service is people who is forced by the government be a part of the army to serve and protect the country.",
+        "good": "Military service is when people are forced by the government to be a part of the army to serve and protect the country."
+      },
+      {
+        "id": "19651",
+        "task": "gec",
+        "bad": "I was satisfied with quick response of Apple support program!!",
+        "good": "I was satisfied with the quick response of the Apple support program!!"
+      },
+      {
+        "id": "5028",
+        "task": "gec",
+        "bad": "Wastes generated by these nuclear plants also bring problems to our future generations.",
+        "good": "Wastes generated by these nuclear plants also bring problems to future generations."
+      },
+      {
+        "id": "5536",
+        "task": "gec",
+        "bad": "All these major factors have lead many countries to start looking for alternative sources of energy to replace the usage of fossil fuels.",
+        "good": "All these major factors led many countries to start looking for alternative sources of energy to replace the usage of fossil fuels."
+      },
+      {
+        "id": "456",
+        "task": "gec",
+        "bad": "Engineers need to find right materials and design a suitable container for hydrogen so that it can be safely transported and stored.",
+        "good": "Engineers need to find the right materials and design a suitable container for hydrogen so that it can be safely transported and stored."
+      },
+      {
+        "id": "5326",
+        "task": "gec",
+        "bad": "Generation III reactors are built within a double concealment which will protect the reactor even the outer layer is penetrated.",
+        "good": "Generation III reactors are built within a double concealment which will protect the reactor even when the outer layer is penetrated."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Improve the grammaticality of this sentence",
+    "examples": [
+      {
+        "id": "16473",
+        "task": "gec",
+        "bad": "My new hobby is photography-but it is much more difficult than I expected.",
+        "good": "My new hobby is photography, but it is much more difficult than I expected."
+      },
+      {
+        "id": "18960",
+        "task": "gec",
+        "bad": "At the entrance of the gallery, there was a big christmas tree illuminated beautifully and the sky turns to the night with grey sky.",
+        "good": "At the entrance of the gallery, there was a big Christmas tree illuminated beautifully, and the sky turned to night with the grey sky."
+      },
+      {
+        "id": "2513",
+        "task": "gec",
+        "bad": "Hence, funds spent on aged should be limited in lieu of spending it on more beneficial areas for the country.",
+        "good": "Hence, funds spent on the aged should be limited in lieu of spending it on more beneficial areas for the country."
+      },
+      {
+        "id": "8648",
+        "task": "gec",
+        "bad": "Although the weather can change more easily, so you should bring different kinds of clothes both heavy and light.",
+        "good": "Although the weather can change more easily, you should bring different kinds of clothes, both heavy and light."
+      },
+      {
+        "id": "12715",
+        "task": "gec",
+        "bad": "However, the young I soon discovered that some dimensions of difference do carry social significance.",
+        "good": "However, when I was young, I soon discovered that some dimensions of difference do carry social significance."
+      },
+      {
+        "id": "15921",
+        "task": "gec",
+        "bad": "Resently, I have been studying for 3 or 4 hours a day, but Reading and Listening were mainly large part.",
+        "good": "Recently Recently, I have been studying for 3 or 4 hours a day, but Reading and Listening were mainly the large part."
+      },
+      {
+        "id": "11793",
+        "task": "gec",
+        "bad": "Everything in this movie, Henri, is so simple and startling, but in the same time is hard to describe.",
+        "good": "Everything in this movie, Henri, is so simple and startling, but at the same time, hard to describe."
+      },
+      {
+        "id": "6607",
+        "task": "gec",
+        "bad": "I did not know what going on.",
+        "good": "I did not know what was going on."
+      },
+      {
+        "id": "4369",
+        "task": "gec",
+        "bad": "From this statement, we know that psychology aims to improve system by helping people in psychological way.",
+        "good": "From this statement, we know that psychology aims to improve systems by helping people in a psychological way."
+      },
+      {
+        "id": "10468",
+        "task": "gec",
+        "bad": "I did with my dog.",
+        "good": "I did agility with my dog."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Improve the grammaticality of this text",
+    "examples": [
+      {
+        "id": "6621",
+        "task": "gec",
+        "bad": "It is true that there are five stages in the whole process.we can see that the processes begin with design and end at packaging and distribution.",
+        "good": "It is true that there are five stages in the whole process. We can see that the processes begin with design and end with packaging and distribution."
+      },
+      {
+        "id": "331",
+        "task": "gec",
+        "bad": "Birth of these two types of innovations had very similar causes, such as pressure from the society or government to cater to certain needs.",
+        "good": "The birth of these two types of innovations had very similar causes, such as pressure from the society or government to cater to certain needs."
+      },
+      {
+        "id": "17559",
+        "task": "gec",
+        "bad": "I hope that I can go there with good friends someday.",
+        "good": "I hope that I can go there with my good friends someday."
+      },
+      {
+        "id": "2081",
+        "task": "gec",
+        "bad": "All in all, the result of retirement saving scheme is acceptable in the society as a whole and it is an undeniably necessary step we need to make to cope up with the burden from speedily aging population.",
+        "good": "All in all, the result of the retirement saving scheme is acceptable in society as a whole, and it is an undeniably necessary step we need to take to cope with the burden of a speedily aging population."
+      },
+      {
+        "id": "13780",
+        "task": "gec",
+        "bad": "I bought him a new snowboard jacket and pants as the birthday present.",
+        "good": "I bought him a new snowboard jacket and pants as his birthday present."
+      },
+      {
+        "id": "579",
+        "task": "gec",
+        "bad": "By planting this device into their body, we can detect where they are in case some urgent diseases break out.",
+        "good": "By planting this device in their body, we can detect where they are in case some urgent diseases break out."
+      },
+      {
+        "id": "8855",
+        "task": "gec",
+        "bad": "Nowadays artists of the Theater try to keep that old school and develop their mastery.",
+        "good": "Nowadays, artists of the Theater try to keep that old school and develop their mastery."
+      },
+      {
+        "id": "14757",
+        "task": "gec",
+        "bad": "Air conditioner and the seat next to the driver are broken.",
+        "good": "The air conditioner and the seat next to the driver are broken."
+      },
+      {
+        "id": "2071",
+        "task": "gec",
+        "bad": "This is extremely helpful to the aging population and especially for women who are known to be more concern about their outward appearance.",
+        "good": "This is extremely helpful to the aging population and especially for women who are known to be more concerned about their outward appearance."
+      },
+      {
+        "id": "16578",
+        "task": "gec",
+        "bad": "I think it isn't guilty, but it isn't good for relationships with the other people.",
+        "good": "I don't think it is guilty bad, but it isn't good for relationships with other people."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Make the sentence fluent",
+    "examples": [
+      {
+        "id": "8492",
+        "task": "gec",
+        "bad": "It is quiet hard to have a rest when journalists are trying to know some exciting things about your private life.",
+        "good": "It is quite hard to have a rest when journalists are trying to find out some exciting things about your private life."
+      },
+      {
+        "id": "16474",
+        "task": "gec",
+        "bad": "I miss family so much.",
+        "good": "I miss my family so much."
+      },
+      {
+        "id": "10632",
+        "task": "gec",
+        "bad": "Each kind of guiding light help us, but the most important is to choose the right and accurate person.",
+        "good": "Each kind of guiding light helps us, but the most important thing is to choose the right and accurate person."
+      },
+      {
+        "id": "19196",
+        "task": "gec",
+        "bad": "Does following instruction make sense?",
+        "good": "Does the following instruction make sense?"
+      },
+      {
+        "id": "177",
+        "task": "gec",
+        "bad": "As it was unveiled in the research report, it somehow took longer for the health facilities to obtain approval from the State Health Agency than to actually build or extend the needed facilities.",
+        "good": "As unveiled in the research report, it somehow took longer for the health facilities to obtain approval from the State Health Agency than to actually build or extend the needed facilities."
+      },
+      {
+        "id": "13220",
+        "task": "gec",
+        "bad": "I would suggest the River Boat Disco because not only does it offer a buffet, but also the people are more likely to converse with each other while listening to music than to a comedian.",
+        "good": "I would recommend the River Boat Disco because not only does it offer a buffet, but also, people are more likely to converse with each other while listening to music than with a comedian."
+      },
+      {
+        "id": "9891",
+        "task": "gec",
+        "bad": "Teenagers are main target who drink too many soft drinks.",
+        "good": "Teenagers are the main target who drink too many soft drinks."
+      },
+      {
+        "id": "18415",
+        "task": "gec",
+        "bad": "She copied a Rakugo-ka's way of talking on TV show.",
+        "good": "She copied a Rakugo-ka's way of talking on the TV show."
+      },
+      {
+        "id": "10061",
+        "task": "gec",
+        "bad": "The kenn running expenses will compensate the purchase price in the future.",
+        "good": "The Kenn running expenses will compensate for the purchase price in the future."
+      },
+      {
+        "id": "13476",
+        "task": "gec",
+        "bad": "Moreover you can be lucky to avoid big traffic jams especially if you are taking the train.",
+        "good": "Moreover, you can be lucky enough to avoid big traffic jams, especially if you are taking the train."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Make the sentence grammatical",
+    "examples": [
+      {
+        "id": "16954",
+        "task": "gec",
+        "bad": "My friend told me that they carry a lot of kinds of beer and put beer in every menu.",
+        "good": "My friend told me that they carry a lot of kinds of beer and put beer in every menu item."
+      },
+      {
+        "id": "2012",
+        "task": "gec",
+        "bad": "Aging population becomes a ubiquitous trend in many developed countries such as Japan.",
+        "good": "An aging population has become a ubiquitous trend in many developed countries such as Japan."
+      },
+      {
+        "id": "1727",
+        "task": "gec",
+        "bad": "In the past, a lump sum will be given to the recipients, but now the recipients will get the money in their CPF account on a monthly basis till they pass on.",
+        "good": "In the past, a lump sum was given to the recipients, but now the recipients will get the money in their CPF account on a monthly basis till they pass on."
+      },
+      {
+        "id": "19799",
+        "task": "gec",
+        "bad": "So Japanese high schoolgirls seem to be cold because Japanese high schoolgirls' skirts are very short.",
+        "good": "So and because Japanese high schoolgirls seem to be cold because Japanese high schoolgirls' skirts are worn very short skirts, they are often cold."
+      },
+      {
+        "id": "8373",
+        "task": "gec",
+        "bad": "When mobile phones have conquered our palms, we have no time to even meet our parents and children.",
+        "good": "Now that mobile phones have conquered our palms, we have no time to even meet our parents and children."
+      },
+      {
+        "id": "4526",
+        "task": "gec",
+        "bad": "However the point here I would like to make here is this.",
+        "good": "However, the point I would like to make here is this."
+      },
+      {
+        "id": "4854",
+        "task": "gec",
+        "bad": "Electric vehicle carries large and heavy battery packs to increase the mileage per charge.",
+        "good": "The electric vehicle carries large and heavy battery packs to increase the mileage per charge."
+      },
+      {
+        "id": "1191",
+        "task": "gec",
+        "bad": "The positive impacts of raising the retirement age still outweigh its' negative impacts as nothing can replace the valuable experience that the elders would bring to the companies and the fact that single elders would also be able to earn more savings to look after themselves.",
+        "good": "The positive impacts of raising the retirement age still outweigh its' negative impacts as nothing can replace the valuable experience that the elders would bring to the companies and the fact that they would also be able to earn more savings to look after themselves."
+      },
+      {
+        "id": "12845",
+        "task": "gec",
+        "bad": "This is the effect of a reduction in the cost of production; less production cost allows the producer to reduce the price of his goods while maintaining the initial profit.",
+        "good": "This is the effect of a reduction in the cost of production; lower production costs allow the producer to reduce the price of his goods while maintaining the initial profit."
+      },
+      {
+        "id": "6247",
+        "task": "gec",
+        "bad": "I bet if somebody wants to have some fun he or she can just choose the right Chanel or movie such as comedies, video gags or funny TV shows.",
+        "good": "I bet if somebody wants to have some fun, he or she can just choose the right Channel or movie, such as comedies, video gags, or funny TV shows."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Remove all grammatical errors from this text",
+    "examples": [
+      {
+        "id": "18468",
+        "task": "gec",
+        "bad": "The summer had gone, but it has been still hot in Tokyo.",
+        "good": "The Summer is gone, but it has been being still hot in Tokyo."
+      },
+      {
+        "id": "11893",
+        "task": "gec",
+        "bad": "Due to the interest in protecting animals, people are eager to take part in organizations such as World Wide Fund for Nature (WWF) which is an international non-governmental organization working on issues regarding the conservation, research and restoration of the environment.",
+        "good": "Due to the interest in protecting animals, people are eager to take part in organizations such as the World Wide Fund for Nature (WWF), which is an international non-governmental organization working on issues regarding the conservation, research, and restoration of the environment."
+      },
+      {
+        "id": "736",
+        "task": "gec",
+        "bad": "It creates modern value that allows people of opposite sex to live together without having a family.",
+        "good": "It creates a modern value that allows people of the opposite sex to live together without having a family."
+      },
+      {
+        "id": "698",
+        "task": "gec",
+        "bad": "In this way, the family members of the patient are protected from any emotional harm like stress and anxiety.",
+        "good": "In this way, the family members of the patient are protected from emotional harm like stress and anxiety."
+      },
+      {
+        "id": "16320",
+        "task": "gec",
+        "bad": "Burger king in Japan began to sell amazing burger.",
+        "good": "Burger king in Japan began to sell an amazing burgers."
+      },
+      {
+        "id": "14867",
+        "task": "gec",
+        "bad": "I hope that I will be able to speak English well when I finish the all programs.",
+        "good": "I hope that I will be able to speak English well when I finish all the programs."
+      },
+      {
+        "id": "13783",
+        "task": "gec",
+        "bad": "You can see oilseed rape flowers below sakura trees in the 1st photo.",
+        "good": "You can see oilseed rape flowers below the sakura trees in the 1st photo."
+      },
+      {
+        "id": "13622",
+        "task": "gec",
+        "bad": "I wannna go, but I don't have time because I have an important exam on the next day when they'll come back.",
+        "good": "I wanna want to go, but I don't have time because I have an important exam the next day when they'll come back."
+      },
+      {
+        "id": "16413",
+        "task": "gec",
+        "bad": "This lifestyle may seem boring and painful at first, but I enjoyed this ample of time, while I got feeling better.",
+        "good": "This lifestyle may seem boring and painful at first, but I have enjoyed this ample amount of time while I get better."
+      },
+      {
+        "id": "15163",
+        "task": "gec",
+        "bad": "My husband and I can eat heavy dishes even in the morning though some can't eat heavy meal in the morning.",
+        "good": "My husband and I can eat heavy dishes even in the morning though some can't eat heavy meals in the morning."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Remove grammar mistakes",
+    "examples": [
+      {
+        "id": "15590",
+        "task": "gec",
+        "bad": "If the class finishes, I can enjoy so I endured sleepiness.",
+        "good": "If the class finishes, I can enjoy it so I can fight endured sleepiness."
+      },
+      {
+        "id": "17006",
+        "task": "gec",
+        "bad": "I may be not able to study for the tests.",
+        "good": "I may be not not be able to study for the tests."
+      },
+      {
+        "id": "5088",
+        "task": "gec",
+        "bad": "Therefore compared with the other reactors, MSR has Economical and social advantages.",
+        "good": "Therefore, compared with the other reactors, MSR has economic and social advantages."
+      },
+      {
+        "id": "1063",
+        "task": "gec",
+        "bad": "Married children are given priority if they apply for a flat to stay near or together with their parent.",
+        "good": "Married children are given priority if they apply for a flat to stay near or together with their parents."
+      },
+      {
+        "id": "11452",
+        "task": "gec",
+        "bad": "The test tube contained watermelon juice with sea salt which was very refreshing to drink in the summer heat.",
+        "good": "The test tube contained watermelon juice with sea salt, which was very refreshing to drink in the summer heat."
+      },
+      {
+        "id": "19363",
+        "task": "gec",
+        "bad": "If I can think slowly and configure the sentence, I could 'write' pretty good English composition.",
+        "good": "If I can think slowly and configure construct the sentence, I could 'write' pretty good well in English composition."
+      },
+      {
+        "id": "11831",
+        "task": "gec",
+        "bad": "Another point from the article that the professor opposes is the claim that telecommunication helps to solve many problems that physical separation would cause to businesses.",
+        "good": "Another point from the article that the professor opposes is the claim that telecommunication helps to solve many problems that physical separation would cause for businesses."
+      },
+      {
+        "id": "5467",
+        "task": "gec",
+        "bad": "However, some people say that the accident was caused due to human error.",
+        "good": "However, some people say that the accident was caused due to human errors."
+      },
+      {
+        "id": "17484",
+        "task": "gec",
+        "bad": "I knew only this film was scandal and received the awards for the acting game, seems.",
+        "good": "I only knew that this film was scandalous and received awards for the acting game, it seems."
+      },
+      {
+        "id": "15026",
+        "task": "gec",
+        "bad": "I heard that there had been many more birds a month ago, but now the number was decreasing because summer was coming to the end.",
+        "good": "I heard that there had been many more birds a month ago, but now the number was decreasing because summer was coming to an end."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Remove grammatical mistakes",
+    "examples": [
+      {
+        "id": "13688",
+        "task": "gec",
+        "bad": "Less smile but serious look on my face.",
+        "good": "Less smile but a more serious look on my face."
+      },
+      {
+        "id": "14191",
+        "task": "gec",
+        "bad": "I should have gotten it a few years ago, if it can dramatically change my life.",
+        "good": "I should have gotten it a few years ago since it can dramatically change my life."
+      },
+      {
+        "id": "6178",
+        "task": "gec",
+        "bad": "You can join to any stock market on over the world to buy some Google stocks and sell some Facebook stock too and earn some money.",
+        "good": "You can join any stock market in the world to buy some Google stocks and sell some Facebook stocks too, and earn some money."
+      },
+      {
+        "id": "17565",
+        "task": "gec",
+        "bad": "Nonetheless, I found some new place and got new several impressions.",
+        "good": "Nonetheless, I found some new places and got new several new impressions."
+      },
+      {
+        "id": "1148",
+        "task": "gec",
+        "bad": "Last but not least, I strongly agree that medical advancement have eased through the aging process with the help of the Singapore government.",
+        "good": "Last but not least, I strongly agree that medical advancement has eased the aging process with the help of the Singapore government."
+      },
+      {
+        "id": "1283",
+        "task": "gec",
+        "bad": "In addition, the additional healthcare resource can improve the health of the elderly hence, enhancing the productivity of the aged.",
+        "good": "In addition, additional healthcare resources can improve the health of the elderly hence, enhancing the productivity of the aged."
+      },
+      {
+        "id": "8568",
+        "task": "gec",
+        "bad": "In capital cities of Europe one can easily notice how many people prefer their own means instead of the pushing crowd of public transportation.",
+        "good": "In the capital cities of Europe, one can easily notice how many people prefer their own means instead of the pushing crowd on public transportation."
+      },
+      {
+        "id": "13983",
+        "task": "gec",
+        "bad": "I wish I had gone to abroad when I was college student.",
+        "good": "I wish I had gone abroad when I was a college student."
+      },
+      {
+        "id": "8684",
+        "task": "gec",
+        "bad": "Well, I have a good news for you! I met a wonderful girl last weeck when I went to the cinema.",
+        "good": "Well, I have good news for you! I met a wonderful girl last week when I went to the cinema."
+      },
+      {
+        "id": "748",
+        "task": "gec",
+        "bad": "According to the survey done by United Nations, aging population in Asia is estimated to increase by 314 percent, from 207 million to 857 million in 2050 and among those sub regions East Asia will suffer most.",
+        "good": "According to a survey done by the United Nations, the aging population in Asia is estimated to increase by 314 percent, from 207 million to 857 million in 2050, and among those sub-regions, East Asia will suffer the most."
+      }
+    ]
+  },
+  {
+    "unique_instruction": "Update to remove grammar errors",
+    "examples": [
+      {
+        "id": "15249",
+        "task": "gec",
+        "bad": "The blue small plate in between rice and soup is a serving plate.",
+        "good": "The small blue plate in between the rice and soup is a serving plate."
+      },
+      {
+        "id": "16709",
+        "task": "gec",
+        "bad": "Vindottir, our four-footed cesspool is the cause of this stench.",
+        "good": "Vindottir, our four-footed cesspool, is the cause of this stench."
+      },
+      {
+        "id": "11250",
+        "task": "gec",
+        "bad": "Tell me more about the people you work with and how do you feel there?",
+        "good": "Tell me more about the people you work with and how you feel there."
+      },
+      {
+        "id": "8068",
+        "task": "gec",
+        "bad": "For disable people there should be expanded services to give them easy mobility.",
+        "good": "For disabled people, there should be expanded services to give them easy mobility."
+      },
+      {
+        "id": "6386",
+        "task": "gec",
+        "bad": "One day will be like him.",
+        "good": "One day, I will be like him."
+      },
+      {
+        "id": "10314",
+        "task": "gec",
+        "bad": "I am writing to apply for a job in summer camps.",
+        "good": "I am writing to apply for a job in the summer camps."
+      },
+      {
+        "id": "1528",
+        "task": "gec",
+        "bad": "Realizing this challenge, the government has encouraged companies which are willing to apply the new policy before 2012 by giving grants to companies and prepared the older worker to be more productive by giving workshops and courses.",
+        "good": "Realizing this challenge, the government has encouraged companies that are willing to apply the new policy before 2012 by giving grants to companies and preparing the older worker to be more productive by giving workshops and courses."
+      },
+      {
+        "id": "11667",
+        "task": "gec",
+        "bad": "When acceding to these jobs is not through civil service exams, I think there are only two ways: influences or flattery; and to be honest I don't know what I prefer.",
+        "good": "When getting these jobs is not through civil service exams, I think there are only two ways: influence or flattery. And to be honest, I don't know what I prefer."
+      },
+      {
+        "id": "1281",
+        "task": "gec",
+        "bad": "He is likely to face financial constraints due to the high medical expenditures.",
+        "good": "He is likely to face financial constraints due to high medical expenditures."
+      },
+      {
+        "id": "1650",
+        "task": "gec",
+        "bad": "Employers could also offer other kinds of employment, not necessarily to be the same job or pay as of their previous employment.",
+        "good": "Employers could also offer other kinds of employment; it does not necessarily have to be the same job or pay as their previous employment."
+      }
+    ]
+  }
+]

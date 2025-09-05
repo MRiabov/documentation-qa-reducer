@@ -231,6 +231,7 @@ def main():
     )
     if args.parquet_path:
         ds = load_dataset("parquet", data_files=args.parquet_path, split="train")
+
         def _prep_row_px(ex):
             bad = ex.get("bad", "")
             good = ex.get("good", "")
@@ -249,8 +250,20 @@ def main():
                 "span_token_start": None,
                 "span_token_end": None,
             }
+
         ds = ds.map(_prep_row_px)
-        keep_cols = [c for c in ["bad", "good", "context", "span_token_start", "span_token_end", "id"] if c in ds.column_names]
+        keep_cols = [
+            c
+            for c in [
+                "bad",
+                "good",
+                "context",
+                "span_token_start",
+                "span_token_end",
+                "id",
+            ]
+            if c in ds.column_names
+        ]
         ds = ds.remove_columns([c for c in ds.column_names if c not in keep_cols])
     elif args.hf_dataset:
         ds = load_dataset(args.hf_dataset, split=args.hf_split)
