@@ -1,9 +1,8 @@
 # Training configuration for train_qLora.py
 # You can edit this file to change defaults without passing CLI flags.
 
-base_model: meta-llama/Llama-2-7b
-# base_model: tiiuae/Falcon-E-3B-Instruct
-tiny_debug_model: sshleifer/tiny-gpt2
+base_model: meta-llama/Llama-3.1-8B
+tiny_debug_model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
 
 lora:
   r: 8
@@ -27,7 +26,7 @@ val_split: 0.1
 # 1) Local JSONL dataset (default)
 dataset: sample_dataset.jsonl
 # 2) Parquet path produced by datasets_logic/preprocessing scripts
-parquet_path: null
+parquet_path: data/coedit_parquet/coedit_train.parquet
 # 3) Hugging Face dataset id and split (e.g., "grammarly/coedit")
 hf_dataset: null
 hf_split: train
@@ -36,7 +35,7 @@ coedit_task: null
 
 # Runtime
 device_map: auto  # e.g., "auto", "cpu"
-quantization: auto  # one of: auto, bnb_4bit, none
+quantization: bnb_8bit  # one of: auto, bnb_4bit, bnb_8bit, none
 resume_from_checkpoint: null
 debug_tiny: false
 bf16: false
@@ -53,6 +52,9 @@ report_to: []  # e.g., ["wandb"]
 # Training target formatting
 # One of: good_only (default) or structured (Span/Suggestion/Rationale block)
 train_target_format: good_only
+
+# Training direction: 'fixer' (bad->good) or 'degrader' (good->bad)
+train_direction: degrader
 
 prompt_template: |
   We are creating a dataset for writing text fixer, and you are 

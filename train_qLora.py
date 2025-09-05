@@ -202,11 +202,21 @@ def load_model(
     # Quantization modes:
     # - auto: do not pass BitsAndBytes; allow model's own quantization config (e.g., BitNet) to load
     # - bnb_4bit: use BitsAndBytes 4-bit quantization
+    # - bnb_8bit: use BitsAndBytes 8-bit quantization
     # - none: no quantization arguments (may require large VRAM)
     if quantization == "bnb_4bit":
         quant_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_compute_dtype=torch.float16,
+        )
+        return AutoModelForCausalLM.from_pretrained(
+            model_name,
+            quantization_config=quant_config,
+            device_map=device_map,
+        )
+    elif quantization == "bnb_8bit":
+        quant_config = BitsAndBytesConfig(
+            load_in_8bit=True,
         )
         return AutoModelForCausalLM.from_pretrained(
             model_name,
@@ -409,7 +419,7 @@ def main():
         fp16=not args.debug_tiny,
         bf16=args.bf16,
         seed=args.seed,
-        max_length=args.max_seq_len,
+        max_seq_length=args.max_seq_len,
         completion_only_loss=True,
     )
 

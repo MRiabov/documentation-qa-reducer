@@ -169,7 +169,7 @@ def load_model(model_dir: str, base_model: str, debug_tiny: bool, device: str):
     except Exception:
         # Try load as full model directory
         name = TINY_DEBUG_MODEL if debug_tiny else model_dir
-        tok = AutoTokenizer.from_pretrained(name, use_fast=True)
+        tok = AutoTokenizer.from_pretrained(name, use_fast=False)
         if tok.pad_token is None:
             tok.pad_token = (
                 tok.eos_token if getattr(tok, "eos_token", None) else "[PAD]"
