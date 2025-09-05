@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+eval.py
+
+Primary repo purpose: generate degraded ("bad") text from high-quality ("good") docs to synthesize a dataset.
+This script is an optional consumer that evaluates a fixer model (bad -> good) against held-out examples.
+Behavior unchanged; this is documentation-only clarification.
+"""
+
 from __future__ import annotations
 import argparse, csv, json, logging, os, re
 from typing import List, Tuple, Optional, Dict
@@ -11,6 +19,7 @@ from peft import PeftModel, PeftConfig
 LOGGER = logging.getLogger("eval")
 BASE_MODEL = "meta-llama/Llama-2-7b"
 TINY_DEBUG_MODEL = "sshleifer/tiny-gpt2"
+# Template for fixer task (bad -> good). Core repo focuses on creating the degraded data.
 PROMPT_TEMPLATE = (
     "You are a documentation fixer. Identify the most degraded span in the input and propose a clear fix.\n"
     "{context_block}Bad:\n{bad}\n\nRespond EXACTLY with:\n"
@@ -185,6 +194,25 @@ def main():
         default="INFO",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
     )
+    # Hugging Face dataset integration (e.g., 'grammarly/coedit')
+    ap.add_argument(
+        "--hf_dataset",
+        type=str,
+        default=None,
+        help="Optional Hugging Face dataset name to load, e.g., 'grammarly/coedit'. If provided, --dataset (JSONL) is ignored.",
+    )
+    ap.add_argument(
+        "--hf_split",
+        type=str,
+        default="train",
+        help="Split name for HF dataset (e.g., train, validation, test).",
+    )
+    ap.add_argument(
+        "--coedit_task",
+        type=str,
+        default=None,
+        help="Optional filter for CoEdIT task field (e.g., 'gec'). If set, only rows with matching 'task' are used.",
+    )
     args = ap.parse_args()
     logging.basicConfig(
         level=getattr(logging, args.log_level),
@@ -194,7 +222,47 @@ def main():
     tok, model = load_model(
         args.model, args.base_model, args.debug_tiny, args.device_map
     )
-    ds = load_dataset("json", data_files=args.dataset, split="train")
+    if args.hf_dataset:
+        ds = load_dataset(args.hf_dataset, split=args.hf_split)
+
+        # Map CoEdIT-style fields to our expected schema
+        def _prep_row(ex):
+            bad = ex.get("src", "")
+            good = ex.get("tgt", "")
+            task = ex.get("task", None)
+            if args.coedit_task is not None and task != args.coedit_task:
+                return {
+                    "bad": None,
+                    "good": None,
+                    "context": None,
+                    "span_token_start": None,
+                    "span_token_end": None,
+                }
+            return {
+                "bad": bad,
+                "good": good,
+                "context": (f"Task: {task}" if task else None),
+                "span_token_start": None,
+                "span_token_end": None,
+            }
+
+        ds = ds.map(_prep_row)
+        ds = ds.filter(lambda ex: ex["bad"] is not None and ex["good"] is not None)
+        keep_cols = [
+            c
+            for c in [
+                "bad",
+                "good",
+                "context",
+                "span_token_start",
+                "span_token_end",
+                "id",
+            ]
+            if c in ds.column_names
+        ]
+        ds = ds.remove_columns([c for c in ds.column_names if c not in keep_cols])
+    else:
+        ds = load_dataset("json", data_files=args.dataset, split="train")
     results = []
     model.eval()
     with torch.no_grad():

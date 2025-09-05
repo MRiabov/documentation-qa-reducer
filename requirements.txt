@@ -6,3 +6,5 @@ datasets
 safetensors
 sentence_transformers 
 evaluate
+ruff
+pyarrow

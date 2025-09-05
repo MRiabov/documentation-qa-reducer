@@ -306,6 +306,25 @@ def main():
         default="INFO",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
     )
+    # Hugging Face dataset integration (e.g., 'grammarly/coedit')
+    ap.add_argument(
+        "--hf_dataset",
+        type=str,
+        default=None,
+        help="Optional Hugging Face dataset name to load, e.g., 'grammarly/coedit'. If provided, --dataset (JSONL) is ignored.",
+    )
+    ap.add_argument(
+        "--hf_split",
+        type=str,
+        default="train",
+        help="Split name for HF dataset (e.g., train, validation, test).",
+    )
+    ap.add_argument(
+        "--coedit_task",
+        type=str,
+        default=None,
+        help="Optional filter for CoEdIT task field (e.g., 'gec'). If set, only rows with matching 'task' are used.",
+    )
     args = ap.parse_args()
 
     logging.basicConfig(
@@ -334,7 +353,41 @@ def main():
     model = get_peft_model(model, peft_config)
 
     # Load dataset
-    data = load_dataset("json", data_files=args.dataset, split="train")
+    if args.hf_dataset:
+        data = load_dataset(args.hf_dataset, split=args.hf_split)
+        # Map CoEdIT-style fields to our expected schema
+        def _prep_row(ex):
+            # CoEdIT fields: '_id', 'task', 'src', 'tgt'
+            # Use src as degraded input (bad), tgt as target (good)
+            bad = ex.get("src", "")
+            good = ex.get("tgt", "")
+            task = ex.get("task", None)
+            # Optional filter by task
+            if args.coedit_task is not None and task != args.coedit_task:
+                return {
+                    "bad": None,
+                    "good": None,
+                    "context": None,
+                    "span_token_start": None,
+                    "span_token_end": None,
+                }
+            return {
+                "bad": bad,
+                "good": good,
+                # Provide lightweight context to preserve task info if present
+                "context": (f"Task: {task}" if task else None),
+                # CoEdIT doesn't provide spans; leave None so training doesn't use them in 'good_only' mode
+                "span_token_start": None,
+                "span_token_end": None,
+            }
+        data = data.map(_prep_row)
+        # Drop rows filtered out
+        data = data.filter(lambda ex: ex["bad"] is not None and ex["good"] is not None)
+        # Keep only necessary columns to reduce memory
+        keep_cols = [c for c in ["bad", "good", "context", "span_token_start", "span_token_end"] if c in data.column_names]
+        data = data.remove_columns([c for c in data.column_names if c not in keep_cols])
+    else:
+        data = load_dataset("json", data_files=args.dataset, split="train")
 
     # Tokenize
     def _map_fn(batch):

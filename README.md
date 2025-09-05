@@ -36,6 +36,22 @@ Notes:
 - Field mapping for CoEdIT: `src` -> `bad` (degraded input), `tgt` -> `good` (target), `task` -> `context` (as `Task: <task>`).
 - CoEdIT does not provide token spans; training defaults to the `good_only` target format. You can still use `--train_target_format structured` if desired; span indices will fall back to simple defaults.
 
+## Preprocess CoEdIT to Parquet (fast)
+
+Use the helper script to split `src` into `instruction` and `bad` (by the first colon), keep `tgt` as `good`, and write Parquet files for each split:
+
+- python datasets_logic/preprocessing/coedit_preprocessing.py --output_dir data/coedit_parquet --splits train,validation --num_proc 8
+- With task filter and row limit (e.g., only `gec`, first 20k rows, shuffled):
+  - python datasets_logic/preprocessing/coedit_preprocessing.py --output_dir data/coedit_parquet --splits train --coedit_task gec --limit 20000 --shuffle --seed 42 --num_proc 8
+
+Outputs:
+
+- data/coedit_parquet/coedit_train.parquet
+- data/coedit_parquet/coedit_validation.parquet
+- data/coedit_parquet/coedit_test.parquet (if available)
+
+Schema: `[id, task, instruction, bad, good]`
+
 Defaults:
 
 - BASE_MODEL: meta-llama/Llama-2-7b (use --debug_tiny for sshleifer/tiny-gpt2)
