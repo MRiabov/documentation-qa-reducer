@@ -52,6 +52,19 @@ Outputs:
 
 Schema: `[id, task, instruction, bad, good]`
 
+## Train/Evaluate from Parquet
+
+After generating Parquet files, you can point training and evaluation directly at them:
+
+- Train from Parquet (tiny smoke test):
+  - python train_qLora.py --parquet_path data/coedit_parquet/coedit_train.parquet --debug_tiny --per_device_batch_size 1 --max_steps 1
+
+- Train from Parquet (LoRA, full run):
+  - accelerate launch train_qLora.py --parquet_path data/coedit_parquet/coedit_train.parquet --save_dir ./lora_out --device_map auto
+
+- Evaluate from Parquet:
+  - python eval.py --model ./lora_out --parquet_path data/coedit_parquet/coedit_validation.parquet --out eval_results.csv --batch 8
+
 Defaults:
 
 - BASE_MODEL: meta-llama/Llama-2-7b (use --debug_tiny for sshleifer/tiny-gpt2)

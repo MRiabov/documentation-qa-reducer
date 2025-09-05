@@ -306,6 +306,13 @@ def main():
         default="INFO",
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
     )
+    # Local Parquet dataset support
+    ap.add_argument(
+        "--parquet_path",
+        type=str,
+        default=None,
+        help="Optional path to a Parquet file produced by coedit_preprocessing.py. If provided, overrides --hf_dataset/--dataset.",
+    )
     # Hugging Face dataset integration (e.g., 'grammarly/coedit')
     ap.add_argument(
         "--hf_dataset",
@@ -353,7 +360,31 @@ def main():
     model = get_peft_model(model, peft_config)
 
     # Load dataset
-    if args.hf_dataset:
+    if args.parquet_path:
+        # Expect columns: id, task, instruction, bad, good
+        data = load_dataset("parquet", data_files=args.parquet_path, split="train")
+        def _prep_row_px(ex):
+            bad = ex.get("bad", "")
+            good = ex.get("good", "")
+            instr = ex.get("instruction", None)
+            task = ex.get("task", None)
+            ctx_parts = []
+            if instr:
+                ctx_parts.append(f"Instruction: {instr}")
+            if task:
+                ctx_parts.append(f"Task: {task}")
+            ctx = "\n".join(ctx_parts) if ctx_parts else None
+            return {
+                "bad": bad,
+                "good": good,
+                "context": ctx,
+                "span_token_start": None,
+                "span_token_end": None,
+            }
+        data = data.map(_prep_row_px)
+        keep_cols = [c for c in ["bad", "good", "context", "span_token_start", "span_token_end"] if c in data.column_names]
+        data = data.remove_columns([c for c in data.column_names if c not in keep_cols])
+    elif args.hf_dataset:
         data = load_dataset(args.hf_dataset, split=args.hf_split)
         # Map CoEdIT-style fields to our expected schema
         def _prep_row(ex):
