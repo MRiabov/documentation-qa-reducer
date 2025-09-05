@@ -1,5 +1,7 @@
 # Templates (use exact final format)
 
+Note: This repository’s primary purpose is to degrade high-quality documentation into poor variants to create a synthetic “bad” dataset from “good.” The templates below are intended for the fixer task (bad -> good) when training a model that repairs degraded docs. Keep the exact output format.
+
 ## 1) Seq2seq single-model (detect + rewrite)
 
 System: You improve degraded developer docs by identifying the worst span and proposing a fix.

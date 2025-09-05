@@ -2,8 +2,11 @@
 """
 data_prep.py
 
-Convert a directory of "good" docs (JSONL, one document per line with {"id","text","source"})
-into a dataset of paired examples ("bad" and "good") with span alignment for the degraded area.
+Primary role: This repository degrades high-quality developer documentation into lower-quality variants to synthesize a "bad" corpus from a "good" corpus.
+This module constructs the degraded text ("bad") from the original ("good"), and computes span alignment for where degradation occurs.
+
+Input: a directory of "good" docs (JSONL, one document per line with {"id","text","source"}).
+Output: a dataset of paired examples ("bad" and "good") with span alignment for the degraded area.
 
 CLI:
   python data_prep.py --input good_docs_dir --output dataset.jsonl --n-per-doc 3 --seed 42 --use-llm-degrader False

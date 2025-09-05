@@ -5,8 +5,10 @@
 """
 train_qLora.py
 
-Train a 7B causal/instruction model with 4-bit quantization + LoRA adapters (QLoRA style)
-on the dataset produced by data_prep.py.
+Primary repo purpose: degrade high-quality developer documentation into lower-quality variants to synthesize a "bad" corpus from a "good" corpus.
+
+This script is an optional consumer of that dataset. It shows how to train a 7B causal/instruction model with 4-bit quantization + LoRA adapters (QLoRA style) on the paired (bad, good) data.
+By default, it trains a "fixer" model that maps bad -> good (i.e., rewrites degraded inputs back to high quality). If you want to train a degrader model instead, prepare batches externally using `good` as input and `bad` as target, without changing this file's logic.
 
 Example runs:
   # Debug tiny quick test:
@@ -17,7 +19,7 @@ Example runs:
 
 Notes:
 - Default BASE_MODEL is meta-llama/Llama-2-7b. Use --debug_tiny to switch to a tiny model for CPU-only demos.
-- Targets default to "good" text only (per spec). Optional --train_target_format structured to supervise full formatted output.
+- Targets default to training a fixer (bad -> good). Optional --train_target_format "structured" supervises the exact eval format.
 """
 
 from __future__ import annotations
@@ -63,6 +65,7 @@ SAVE_DIR = "./lora_out"
 SEED = 42
 
 PROMPT_TEMPLATE = (
+    # This template is for the fixer task (bad -> good). The core repo still focuses on creating the bad data.
     "You are a documentation fixer. Identify the most degraded span in the input and propose a clear fix.\n"
     "{context_block}"
     "Bad:\n{bad}\n\n"
