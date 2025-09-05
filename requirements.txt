@@ -1,0 +1,8 @@
+transformers 
+accelerate 
+peft 
+bitsandbytes 
+datasets 
+safetensors
+sentence_transformers 
+evaluate
