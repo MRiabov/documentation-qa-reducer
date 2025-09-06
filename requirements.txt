@@ -16,3 +16,4 @@ protobuf
 tiktoken
 blobfile
 flash-attn
+comet-ml

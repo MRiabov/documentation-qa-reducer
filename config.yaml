@@ -36,10 +36,10 @@ coedit_task: null
 # Runtime
 device_map: auto  # e.g., "auto", "cpu"
 quantization: bnb_8bit  # one of: auto, bnb_4bit, bnb_8bit, none
-resume_from_checkpoint: null
+resume_from_checkpoint: ./lora_out/checkpoint-800 # none
 debug_tiny: false
-bf16: false
-attn_implementation: flash_attention_3  # e.g., null, eager, sdpa, flash_attention_2, flash_attention_3
+bf16: false # makes no difference on rtx 3090, but I'd have to retrain.
+attn_implementation: flash_attention_2  # e.g., null, eager, sdpa, flash_attention_2, flash_attention_3
 
 # Logging / evaluation / saving
 log_level: INFO
@@ -50,6 +50,9 @@ save_steps: 100
 save_total_limit: 2
 report_to: []  # e.g., ["wandb"]
 
+# Evaluation controls
+max_generated: 50
+
 # Training target formatting
 # One of: good_only (default) or structured (Span/Suggestion/Rationale block)
 train_target_format: good_only
@@ -57,13 +60,12 @@ train_target_format: good_only
 # Training direction: 'fixer' (bad->good) or 'degrader' (good->bad)
 train_direction: degrader
 
-prompt_template: |
-  We are creating a dataset for writing text fixer, and you are 
-  {context_block}
-  Bad:
-  {bad}
-
-  Respond EXACTLY with:
-  Span: [START:<token_idx>][END:<token_idx>]
-  Suggestion: <improved sentence or snippet>
-  Rationale: <one-sentence explanation>
+# CometML experiment tracking (for eval loops during training)
+comet:
+  enabled: false           # set true to enable Comet logging
+  project_name: doc-qa-reducer       # e.g., "doc-qa-reducer"
+  workspace: null          # your Comet workspace (optional)
+  api_key: null            # optional; can also use env COMET_API_KEY
+  offline: false           # set true to log offline and upload later
+  eval_samples: 8          # how many eval samples to log each eval step
+  gen_max_new_tokens: 128  # generation length for predictions

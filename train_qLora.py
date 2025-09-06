@@ -34,6 +34,7 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
 )
+from transformers.trainer_callback import TrainerCallback
 from peft import LoraConfig
 from trl import SFTTrainer, SFTConfig
 import yaml
@@ -103,6 +104,99 @@ DEGRADER_PROMPT_TEMPLATE = _CFG.get(
         "Respond ONLY with the degraded text.\n"
     ),
 )
+
+# Task-aware degrader prompt pools (5 per task) for CoEdIT tasks
+# Tasks: gec, neutralize, simplification, paraphrase, coherence, clarity
+_TASK_PROMPTS = {
+    "gec": [
+        "Degrade the writing by adding a few grammar and punctuation mistakes (subject–verb disagreement, missing commas), but keep the facts and intent intact.",
+        "Inject small typos and casing issues (e.g., random lowercase ‘i’, swapped letters) while preserving the original meaning.",
+        "Introduce minor tense inconsistencies and article/determiner errors without changing the content.",
+        "Make the text slightly ungrammatical with misplaced modifiers or awkward agreement; do not alter technical details.",
+        "Add a handful of spelling mistakes and stray whitespace; keep semantics unchanged so it’s easily fixable.",
+    ],
+    "neutralize": [
+        "Make the tone opinionated by adding subjective descriptors about mentioned entities; avoid slurs and keep content safe and reversible.",
+        "Introduce mild bias or evaluative adjectives (e.g., ‘clever’, ‘poorly designed’) while keeping the factual content the same.",
+        "Shift from neutral to slightly judgmental tone with emotionally loaded wording but no new facts.",
+        "Add subtle favoritism or skepticism markers (e.g., ‘supposedly’, ‘obviously’) without altering claims.",
+        "Insert light stereotypes or value-laden phrasing in a reversible manner; do not include hateful language.",
+    ],
+    "simplification": [
+        "Increase complexity and verbosity using longer sentences and extra jargon while keeping the original meaning.",
+        "Replace simple words with more technical or formal vocabulary and nested clauses; preserve content.",
+        "Make the text denser with subordinate clauses and nominalizations; do not add new information.",
+        "Expand concise phrases into verbose, academic-sounding language without changing facts.",
+        "Introduce multi-step phrasing and abstract terms to reduce simplicity while keeping intent intact.",
+    ],
+    "paraphrase": [
+        "Produce an awkward near-duplicate phrasing with redundancy and minor word order issues; preserve meaning.",
+        "Rephrase using uncommon synonyms and repetitive structures so it reads less natural but equivalent in content.",
+        "Add slight repetition and clunky phrasing that keeps the same information and intent.",
+        "Create a verbose, stilted paraphrase with mild tautologies but no new facts.",
+        "Use unusual collocations and minor phrasing errors while maintaining the original semantics.",
+    ],
+    "coherence": [
+        "Reduce cohesion by shuffling clauses slightly and adding a weak contradiction or off-topic aside; keep facts recoverable.",
+        "Insert confusing connectives and break logical flow while keeping statements mostly intact.",
+        "Introduce small jumps between ideas and a minor inconsistency that remains easy to fix.",
+        "Make transitions vague or mismatched so the narrative feels disjointed; preserve core content.",
+        "Add an unrelated filler clause that disrupts flow but does not change the underlying facts.",
+    ],
+    "clarity": [
+        "Reduce clarity with vague pronouns and ambiguous references while preserving all information.",
+        "Replace specific terms with imprecise wording (e.g., ‘thing’, ‘stuff’) and remove disambiguating details.",
+        "Introduce verbosity and circumlocution that obscures meaning without altering it.",
+        "Make sentences harder to parse with nested parentheticals and unclear referents; keep intent unchanged.",
+        "Use generic placeholders and omit exact names so the text becomes less clear yet reversible.",
+    ],
+}
+
+
+def _choose_task_prompt(task: Optional[str], good_text: str, seed: int) -> str:
+    """Deterministically pick a prompt for the given task using a hash of (task, good_text, seed).
+    Falls back to the default degrader template instruction if task is unknown.
+    """
+    task_key = (task or "").strip().lower()
+    candidates = _TASK_PROMPTS.get(task_key)
+    if not candidates:
+        # Generic fallbacks across categories
+        candidates = [
+            "Introduce small grammatical issues and reduce readability slightly while preserving meaning.",
+            "Make the wording more awkward and verbose without changing the facts.",
+            "Add mild tone or style issues (bias, redundancy) that are easy to reverse.",
+            "Disrupt flow a bit with confusing transitions but keep information intact.",
+            "Use imprecise terms and minor inconsistencies while keeping intent the same.",
+        ]
+    # Deterministic index
+    key = f"{task_key}::{good_text}::{seed}"
+    idx = abs(hash(key)) % len(candidates)
+    return candidates[idx]
+
+
+def build_prompt_degrader_task_aware(
+    good: str,
+    context: Optional[str],
+    task: Optional[str],
+    instruction: Optional[str],
+    seed: int,
+) -> str:
+    context_lines: List[str] = []
+    if context:
+        context_lines.append(f"Context:\n{context}")
+    # Include original dataset instruction if available
+    if instruction:
+        context_lines.append(f"Original instruction: {instruction}")
+    if task:
+        context_lines.append(f"Task: {task}")
+    context_block = ("\n\n".join(context_lines) + "\n\n") if context_lines else ""
+    task_instruction = _choose_task_prompt(task, good, seed)
+    return (
+        f"You are a task-aware text degrader. {task_instruction}\n"
+        f"{context_block}"
+        f"Good:\n{good}\n\n"
+        f"Respond ONLY with the degraded text.\n"
+    )
 
 
 # -----------------------------
@@ -237,6 +331,174 @@ def load_model(
     )
 
 
+# -----------------------------
+# CometML integration (optional)
+# -----------------------------
+_COMET = _CFG.get("comet", {}) if isinstance(_CFG.get("comet", {}), dict) else {}
+COMET_ENABLED = bool(_COMET.get("enabled", False))
+COMET_PROJECT = _COMET.get("project_name", None)
+COMET_WORKSPACE = _COMET.get("workspace", None)
+COMET_OFFLINE = bool(_COMET.get("offline", False))
+COMET_EVAL_SAMPLES = int(_COMET.get("eval_samples", 8))
+COMET_GEN_MAX_NEW_TOKENS = int(_COMET.get("gen_max_new_tokens", 128))
+
+
+def _bleu1(pred: str, ref: str) -> float:
+    pt, rt = pred.split(), ref.split()
+    if not pt:
+        return 0.0
+    rc = {}
+    for t in rt:
+        rc[t] = rc.get(t, 0) + 1
+    ov = 0
+    for t in pt:
+        if rc.get(t, 0) > 0:
+            ov += 1
+            rc[t] -= 1
+    return ov / len(pt)
+
+
+def _rougeL_f1(pred: str, ref: str) -> float:
+    pt, rt = pred.split(), ref.split()
+    if not pt or not rt:
+        return 0.0
+    # LCS
+    dp = [[0] * (len(rt) + 1) for _ in range(len(pt) + 1)]
+    for i in range(1, len(pt) + 1):
+        for j in range(1, len(rt) + 1):
+            if pt[i - 1] == rt[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+    lcs = dp[-1][-1]
+    prec = lcs / len(pt)
+    rec = lcs / len(rt)
+    return 0.0 if (prec + rec) == 0 else (2 * prec * rec) / (prec + rec)
+
+
+class CometEvalCallback(TrainerCallback):
+    """
+    On each evaluation event, generate model outputs for a small sample from eval_dataset
+    and log input/prediction/gold along with simple metrics to CometML as a JSON asset,
+    plus aggregate scalar metrics.
+    """
+
+    def __init__(
+        self,
+        experiment,
+        tokenizer: AutoTokenizer,
+        eval_dataset,
+        sample_size: int = 8,
+        gen_max_new_tokens: int = 128,
+    ) -> None:
+        super().__init__()
+        self.experiment = experiment
+        self.tokenizer = tokenizer
+        self.eval_dataset = eval_dataset
+        self.sample_size = max(1, int(sample_size))
+        self.gen_max_new_tokens = int(gen_max_new_tokens)
+        self.model = None
+
+    def on_train_begin(self, args, state, control, **kwargs):  # type: ignore[override]
+        # Capture model reference once training starts
+        self.model = kwargs.get("model", None)
+        return control
+
+    def on_evaluate(self, args, state, control, **kwargs):  # type: ignore[override]
+        if not self.experiment or not self.eval_dataset or len(self.eval_dataset) == 0:
+            return control
+        try:
+            model = self.model or kwargs.get("model", None)
+            if model is None:
+                return control
+            # Deterministic sliding window over eval set based on global_step
+            start = (state.global_step * self.sample_size) % max(
+                1, len(self.eval_dataset)
+            )
+            end = start + self.sample_size
+            indices = list(range(start, min(end, len(self.eval_dataset))))
+            # If wrapping needed
+            if len(indices) < self.sample_size and len(self.eval_dataset) > 0:
+                indices += list(range(0, self.sample_size - len(indices)))
+
+            samples = [self.eval_dataset[i] for i in indices]
+            prompts = [s.get("prompt", "") for s in samples]
+            golds = [s.get("completion", "") for s in samples]
+
+            max_len = getattr(args, "max_length", getattr(args, "max_seq_length", 512))
+            enc = self.tokenizer(
+                prompts,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=max_len,
+            )
+            enc = {k: v.to(model.device) for k, v in enc.items()}
+            gen = model.generate(
+                **enc,
+                max_new_tokens=self.gen_max_new_tokens,
+                do_sample=False,
+                num_beams=1,
+                pad_token_id=self.tokenizer.eos_token_id,
+            )
+            outs = self.tokenizer.batch_decode(gen, skip_special_tokens=True)
+            preds = []
+            for p, full in zip(prompts, outs):
+                idx = full.find(p)
+                pred = full[idx + len(p) :] if idx != -1 else full
+                preds.append(pred.strip())
+
+            # Compute simple metrics
+            bleu1 = [_bleu1(pr, gr) for pr, gr in zip(preds, golds)]
+            rougeL = [_rougeL_f1(pr, gr) for pr, gr in zip(preds, golds)]
+            if len(bleu1) > 0:
+                bleu_mean = float(sum(bleu1) / len(bleu1))
+                rouge_mean = float(sum(rougeL) / len(rougeL))
+                self.experiment.log_metric(
+                    "eval_samples_bleu1_mean", bleu_mean, step=state.global_step
+                )
+                self.experiment.log_metric(
+                    "eval_samples_rougeL_mean", rouge_mean, step=state.global_step
+                )
+
+            # Log detailed per-sample data as a JSON asset
+            rows = []
+            for i, (idx, prompt, pred, gold, b, r) in enumerate(
+                zip(indices, prompts, preds, golds, bleu1, rougeL)
+            ):
+                rows.append(
+                    {
+                        "eval_index": int(idx),
+                        "prompt": prompt,
+                        "prediction": pred,
+                        "gold": gold,
+                        "bleu1": float(b),
+                        "rougeL_f1": float(r),
+                        "global_step": int(state.global_step),
+                    }
+                )
+            import json as _json
+
+            self.experiment.log_asset_data(
+                _json.dumps(rows, ensure_ascii=False, indent=2),
+                name=f"eval_step_{int(state.global_step)}_samples.json",
+            )
+        except Exception as e:
+            LOGGER.warning(f"Comet logging failed during on_evaluate: {e}")
+        return control
+
+    def on_log(self, args, state, control, logs=None, **kwargs):  # type: ignore[override]
+        if not self.experiment or not logs:
+            return control
+        try:
+            for k, v in logs.items():
+                if isinstance(v, (int, float)):
+                    self.experiment.log_metric(k, v, step=state.global_step)
+        except Exception as e:
+            LOGGER.warning(f"Comet logging failed during on_log: {e}")
+        return control
+
+
 def main():
     # Load all runtime settings exclusively from config.yaml
     class Args:
@@ -327,6 +589,8 @@ def main():
                 "bad": bad,
                 "good": good,
                 "context": ctx,
+                "task": task,
+                "instruction": instr,
                 "span_token_start": None,
                 "span_token_end": None,
             }
@@ -334,7 +598,15 @@ def main():
         data = data.map(_prep_row_px)
         keep_cols = [
             c
-            for c in ["bad", "good", "context", "span_token_start", "span_token_end"]
+            for c in [
+                "bad",
+                "good",
+                "context",
+                "task",
+                "instruction",
+                "span_token_start",
+                "span_token_end",
+            ]
             if c in data.column_names
         ]
         data = data.remove_columns([c for c in data.column_names if c not in keep_cols])
@@ -354,6 +626,8 @@ def main():
                     "bad": None,
                     "good": None,
                     "context": None,
+                    "task": None,
+                    "instruction": None,
                     "span_token_start": None,
                     "span_token_end": None,
                 }
@@ -362,6 +636,8 @@ def main():
                 "good": good,
                 # Provide lightweight context to preserve task info if present
                 "context": (f"Task: {task}" if task else None),
+                "task": task,
+                "instruction": None,
                 # CoEdIT doesn't provide spans; leave None so training doesn't use them in 'good_only' mode
                 "span_token_start": None,
                 "span_token_end": None,
@@ -373,7 +649,15 @@ def main():
         # Keep only necessary columns to reduce memory
         keep_cols = [
             c
-            for c in ["bad", "good", "context", "span_token_start", "span_token_end"]
+            for c in [
+                "bad",
+                "good",
+                "context",
+                "task",
+                "instruction",
+                "span_token_start",
+                "span_token_end",
+            ]
             if c in data.column_names
         ]
         data = data.remove_columns([c for c in data.column_names if c not in keep_cols])
@@ -385,11 +669,19 @@ def main():
         bad = ex.get("bad", "")
         good = ex.get("good", "")
         ctx = ex.get("context", None)
+        tsk = ex.get("task", None)
+        instr = ex.get("instruction", None)
         s = ex.get("span_token_start", None)
         e = ex.get("span_token_end", None)
         if TRAIN_DIRECTION == "degrader":
             # Degrader: input is GOOD, completion is BAD (raw degraded text)
-            prompt = build_prompt_degrader(good=good, context=ctx)
+            prompt = build_prompt_degrader_task_aware(
+                good=good,
+                context=ctx,
+                task=tsk,
+                instruction=instr,
+                seed=args.seed,
+            )
             completion = bad
         else:
             # Fixer (default): input is BAD, completion is GOOD (structured optional)
@@ -413,7 +705,9 @@ def main():
     total_steps = args.max_steps if args.max_steps > 0 else None
     sft_config = SFTConfig(
         output_dir=args.save_dir,
-        per_device_train_batch_size=args.per_device_batch_size,
+        per_device_train_batch_size=args.per_device_train_batch_size
+        if hasattr(args, "per_device_train_batch_size")
+        else args.per_device_batch_size,
         per_device_eval_batch_size=max(1, args.per_device_batch_size),
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         learning_rate=args.learning_rate,
@@ -425,10 +719,10 @@ def main():
         eval_strategy=args.evaluation_strategy,
         eval_steps=args.eval_steps,
         report_to=_CFG.get("report_to", []),
-        fp16=not args.debug_tiny,
+        fp16=not args.bf16,
         bf16=args.bf16,
         seed=args.seed,
-        max_seq_length=args.max_seq_len,
+        max_length=args.max_seq_len,
         completion_only_loss=True,
     )
 
@@ -441,12 +735,81 @@ def main():
         peft_config=peft_config,
     )
 
+    # Initialize Comet Experiment and add eval callback
+    experiment = None
+    if COMET_ENABLED:
+        try:
+            from comet_ml import Experiment, OfflineExperiment  # type: ignore
+
+            exp_kwargs = {}
+            if COMET_PROJECT:
+                exp_kwargs["project_name"] = COMET_PROJECT
+            if COMET_WORKSPACE:
+                exp_kwargs["workspace"] = COMET_WORKSPACE
+            # api_key can be provided via env COMET_API_KEY; allow optional in config
+            if _COMET.get("api_key"):
+                exp_kwargs["api_key"] = _COMET.get("api_key")
+
+            experiment = (
+                OfflineExperiment(**exp_kwargs)
+                if COMET_OFFLINE
+                else Experiment(**exp_kwargs)
+            )
+            # Log a few key params
+            experiment.log_parameters(
+                {
+                    "base_model": args.base_model,
+                    "learning_rate": args.learning_rate,
+                    "batch_size": args.per_device_batch_size,
+                    "grad_accum": args.gradient_accumulation_steps,
+                    "max_seq_len": args.max_seq_len,
+                    "epochs": args.epochs,
+                    "max_steps": args.max_steps,
+                    "train_direction": TRAIN_DIRECTION,
+                    "train_target_format": args.train_target_format,
+                    "lora_r": args.lora_r,
+                    "lora_alpha": args.lora_alpha,
+                    "lora_dropout": args.lora_dropout,
+                    "quantization": args.quantization,
+                }
+            )
+            # Log prompt templates being used
+            try:
+                experiment.log_asset_data(
+                    PROMPT_TEMPLATE, name="prompt_template_fixer.txt"
+                )
+                if TRAIN_DIRECTION == "degrader":
+                    experiment.log_asset_data(
+                        DEGRADER_PROMPT_TEMPLATE, name="prompt_template_degrader.txt"
+                    )
+            except Exception:
+                pass
+
+            # Attach callback for per-eval sample logging
+            trainer.add_callback(
+                CometEvalCallback(
+                    experiment,
+                    tokenizer,
+                    eval_ds,
+                    sample_size=COMET_EVAL_SAMPLES,
+                    gen_max_new_tokens=COMET_GEN_MAX_NEW_TOKENS,
+                )
+            )
+            LOGGER.info("CometML experiment initialized and callback attached.")
+        except Exception as e:
+            LOGGER.warning(f"CometML not enabled due to error: {e}")
+
     trainer.train(resume_from_checkpoint=args.resume_from_checkpoint)
     os.makedirs(args.save_dir, exist_ok=True)
     # Save resulting PEFT adapters and tokenizer
     trainer.model.save_pretrained(args.save_dir)
     tokenizer.save_pretrained(args.save_dir)
     LOGGER.info(f"Saved LoRA adapters to {args.save_dir}")
+    try:
+        if experiment is not None:
+            experiment.end()
+    except Exception:
+        pass
 
     # Example: merge LoRA for full-model export (optional; commented)
     # merged = model.merge_and_unload()

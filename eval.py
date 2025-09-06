@@ -3,9 +3,9 @@
 """
 eval.py
 
-Primary repo purpose: generate degraded ("bad") text from high-quality ("good") docs to synthesize a dataset.
-This script is an optional consumer that evaluates a fixer model (bad -> good) against held-out examples.
-Behavior unchanged; this is documentation-only clarification.
+Evaluate a trained model (full or PEFT adapter) against a held-out dataset, using the
+same configuration style as training via config.yaml. Supports both 'fixer' and
+'degrader' modes and both 'good_only' and 'structured' targets.
 """
 
 from __future__ import annotations
@@ -13,27 +13,83 @@ import argparse, csv, json, logging, os, re
 from typing import List, Tuple, Optional, Dict
 import torch
 from datasets import load_dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel, PeftConfig
+import yaml
+from tqdm import tqdm
+
+
+# -----------------------------
+# Config loading (mirror train_qLora.py)
+# -----------------------------
+CONFIG_PATH = "config.yaml"
+
+
+def _load_config(path: str) -> dict:
+    if not os.path.exists(path) or yaml is None:
+        return {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+            if not isinstance(data, dict):
+                return {}
+            return data
+    except Exception:
+        return {}
+
+
+_CFG = _load_config(CONFIG_PATH)
 
 LOGGER = logging.getLogger("eval")
-BASE_MODEL = "meta-llama/Llama-2-7b"
-TINY_DEBUG_MODEL = "sshleifer/tiny-gpt2"
-# Template for fixer task (bad -> good). Core repo focuses on creating the degraded data.
-PROMPT_TEMPLATE = (
-    "You are a documentation fixer. Identify the most degraded span in the input and propose a clear fix.\n"
-    "{context_block}Bad:\n{bad}\n\nRespond EXACTLY with:\n"
-    "Span: [START:<token_idx>][END:<token_idx>]\nSuggestion: <improved sentence or snippet>\nRationale: <one-sentence explanation>\n"
+
+BASE_MODEL = _CFG.get("base_model", "meta-llama/Llama-2-7b")
+TINY_DEBUG_MODEL = _CFG.get("tiny_debug_model", "sshleifer/tiny-gpt2")
+
+# Prompt templates and behavior
+PROMPT_TEMPLATE = _CFG.get(
+    "prompt_template",
+    (
+        "You are a documentation fixer. Identify the most degraded span in the input and propose a clear fix.\n"
+        "{context_block}"
+        "Bad:\n{bad}\n\n"
+        "Respond EXACTLY with:\n"
+        "Span: [START:<token_idx>][END:<token_idx>]\n"
+        "Suggestion: <improved sentence or snippet>\n"
+        "Rationale: <one-sentence explanation>\n"
+    ),
 )
+TRAIN_DIRECTION = _CFG.get("train_direction", "fixer")  # 'fixer' or 'degrader'
+DEGRADER_PROMPT_TEMPLATE = _CFG.get(
+    "degrader_prompt_template",
+    (
+        "You are a text degrader. Introduce grammatical errors and reduce readability while preserving the original meaning.\n"
+        "{context_block}"
+        "Good:\n{good}\n\n"
+        "Respond ONLY with the degraded text.\n"
+    ),
+)
+
+# Optional generation length; re-use comet.gen_max_new_tokens if present
+_COMET = _CFG.get("comet", {}) if isinstance(_CFG.get("comet", {}), dict) else {}
+COMET_GEN_MAX_NEW_TOKENS = int(_COMET.get("gen_max_new_tokens", 128))
+
 SPAN_RE = re.compile(r"Span:\s*\[START:(\d+)\]\[END:(\d+)\]", re.I)
 SUG_RE = re.compile(r"Suggestion:\s*(.+)", re.I)
 RAT_RE = re.compile(r"Rationale:\s*(.+)", re.I)
 
 
-def set_seed(s: int) -> None:
+def set_seed_all(s: int) -> None:
     torch.manual_seed(s)
     try:
-        torch.cuda.manual_seed_all(s)  # type: ignore
+        torch.cuda.manual_seed_all(s)  # type: ignore[attr-defined]
+    except Exception:
+        pass
+    try:
+        import random
+        import numpy as np
+
+        random.seed(s)
+        np.random.seed(s)
     except Exception:
         pass
 
@@ -41,6 +97,11 @@ def set_seed(s: int) -> None:
 def build_prompt(bad: str, ctx: Optional[str]) -> str:
     ctxblk = f"Context:\n{ctx}\n\n" if ctx else ""
     return PROMPT_TEMPLATE.format(context_block=ctxblk, bad=bad)
+
+
+def build_prompt_degrader(good: str, ctx: Optional[str]) -> str:
+    ctxblk = f"Context:\n{ctx}\n\n" if ctx else ""
+    return DEGRADER_PROMPT_TEMPLATE.format(context_block=ctxblk, good=good)
 
 
 def parse_output(txt: str) -> Tuple[Optional[int], Optional[int], str, str]:
@@ -152,10 +213,56 @@ def embed_cosine(preds: List[str], refs: List[str]) -> List[float]:
         return sims
 
 
-def load_model(model_dir: str, base_model: str, debug_tiny: bool, device: str):
-    # If model_dir is a PEFT adapter dir, attach to base model
+def load_model(
+    model_path_or_name: str,
+    base_model: str,
+    debug_tiny: bool,
+    device_map: str = "auto",
+    quantization: str = "auto",
+    attn_implementation: Optional[str] = None,
+):
+    """
+    Load a tokenizer and model. If model_path_or_name is a PEFT adapter dir, attach it
+    to the specified base model (or the base in the adapter config). Otherwise, load as
+    a full model. Supports BitsAndBytes 4/8-bit quantization like train_qLora.py.
+    """
+
+    def _load_base(name: str):
+        if debug_tiny:
+            return AutoModelForCausalLM.from_pretrained(
+                name,
+                torch_dtype=torch.float32,
+                device_map=device_map,
+                attn_implementation=attn_implementation,
+            )
+        if quantization == "bnb_4bit":
+            q = BitsAndBytesConfig(
+                load_in_4bit=True, bnb_4bit_compute_dtype=torch.float16
+            )
+            return AutoModelForCausalLM.from_pretrained(
+                name,
+                quantization_config=q,
+                device_map=device_map,
+                attn_implementation=attn_implementation,
+            )
+        if quantization == "bnb_8bit":
+            q = BitsAndBytesConfig(load_in_8bit=True)
+            return AutoModelForCausalLM.from_pretrained(
+                name,
+                quantization_config=q,
+                device_map=device_map,
+                attn_implementation=attn_implementation,
+            )
+        # auto/none
+        return AutoModelForCausalLM.from_pretrained(
+            name,
+            device_map=device_map,
+            attn_implementation=attn_implementation,
+        )
+
+    # Try PEFT adapter first
     try:
-        cfg = PeftConfig.from_pretrained(model_dir)
+        cfg = PeftConfig.from_pretrained(model_path_or_name)
         base = cfg.base_model_name_or_path or base_model
         base = TINY_DEBUG_MODEL if debug_tiny else base
         tok = AutoTokenizer.from_pretrained(base, use_fast=True)
@@ -163,72 +270,80 @@ def load_model(model_dir: str, base_model: str, debug_tiny: bool, device: str):
             tok.pad_token = (
                 tok.eos_token if getattr(tok, "eos_token", None) else "[PAD]"
             )
-        mdl = AutoModelForCausalLM.from_pretrained(base, device_map=device)
-        mdl = PeftModel.from_pretrained(mdl, model_dir)
+        # For decoder-only models, left padding aligns sequence ends for efficient batched generation
+        tok.padding_side = "left"
+        mdl = _load_base(base)
+        mdl = PeftModel.from_pretrained(mdl, model_path_or_name)
         return tok, mdl
     except Exception:
-        # Try load as full model directory
-        name = TINY_DEBUG_MODEL if debug_tiny else model_dir
-        tok = AutoTokenizer.from_pretrained(name, use_fast=False)
+        # Load as a full model dir or model name
+        name = TINY_DEBUG_MODEL if debug_tiny else model_path_or_name
+        tok = AutoTokenizer.from_pretrained(name, use_fast=True)
         if tok.pad_token is None:
             tok.pad_token = (
                 tok.eos_token if getattr(tok, "eos_token", None) else "[PAD]"
             )
-        mdl = AutoModelForCausalLM.from_pretrained(name, device_map=device)
+        tok.padding_side = "left"
+        mdl = _load_base(name)
         return tok, mdl
 
 
 def main():
+    # Only allow lightweight CLI overrides; main config comes from config.yaml
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", type=str, default="./lora_out")
-    ap.add_argument("--base_model", type=str, default=BASE_MODEL)
-    ap.add_argument("--dataset", type=str, default="sample_dataset.jsonl")
+    ap.add_argument(
+        "--model",
+        type=str,
+        default=None,
+        help="Path to PEFT adapter dir or full model. Defaults to resume_from_checkpoint or save_dir from config.yaml.",
+    )
     ap.add_argument("--out", type=str, default="eval_results.csv")
-    ap.add_argument("--batch", type=int, default=8)
-    ap.add_argument("--device_map", type=str, default="auto")
-    ap.add_argument("--debug_tiny", action="store_true")
-    ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument(
-        "--log_level",
-        type=str,
-        default="INFO",
-        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+    args_cli = ap.parse_args()
+
+    class Args:
+        pass
+
+    args = Args()
+    # Data/config
+    args.model = args_cli.model or _CFG.get(
+        "resume_from_checkpoint", _CFG.get("save_dir", "./lora_out")
     )
-    # Local Parquet dataset support
-    ap.add_argument(
-        "--parquet_path",
-        type=str,
-        default=None,
-        help="Optional path to a Parquet file produced by coedit_preprocessing.py. If provided, overrides --hf_dataset/--dataset.",
-    )
-    # Hugging Face dataset integration (e.g., 'grammarly/coedit')
-    ap.add_argument(
-        "--hf_dataset",
-        type=str,
-        default=None,
-        help="Optional Hugging Face dataset name to load, e.g., 'grammarly/coedit'. If provided, --dataset (JSONL) is ignored.",
-    )
-    ap.add_argument(
-        "--hf_split",
-        type=str,
-        default="train",
-        help="Split name for HF dataset (e.g., train, validation, test).",
-    )
-    ap.add_argument(
-        "--coedit_task",
-        type=str,
-        default=None,
-        help="Optional filter for CoEdIT task field (e.g., 'gec'). If set, only rows with matching 'task' are used.",
-    )
-    args = ap.parse_args()
+    args.base_model = BASE_MODEL
+    args.dataset = str(_CFG.get("dataset", "sample_dataset.jsonl"))
+    args.parquet_path = _CFG.get("parquet_path", None)
+    args.hf_dataset = _CFG.get("hf_dataset", None)
+    args.hf_split = _CFG.get("hf_split", "train")
+    args.coedit_task = _CFG.get("coedit_task", None)
+    args.out = args_cli.out
+
+    # Runtime
+    args.batch = int(_CFG.get("batch_size", 8))
+    args.device_map = str(_CFG.get("device_map", "auto"))
+    args.debug_tiny = bool(_CFG.get("debug_tiny", False))
+    args.seed = int(_CFG.get("seed", 42))
+    args.log_level = _CFG.get("log_level", "INFO")
+    args.quantization = str(_CFG.get("quantization", "auto"))
+    args.max_seq_len = int(_CFG.get("max_seq_len", 512))
+    args.attn_implementation = _CFG.get("attn_implementation", None)
+    args.train_target_format = _CFG.get("train_target_format", "good_only")
+    args.max_generated = int(_CFG.get("max_generated", 0))
+
     logging.basicConfig(
-        level=getattr(logging, args.log_level),
+        level=getattr(logging, str(args.log_level).upper(), logging.INFO),
         format="%(asctime)s %(levelname)s: %(message)s",
     )
-    set_seed(args.seed)
+    set_seed_all(args.seed)
+
     tok, model = load_model(
-        args.model, args.base_model, args.debug_tiny, args.device_map
+        args.model,
+        args.base_model,
+        args.debug_tiny,
+        device_map=args.device_map,
+        quantization=args.quantization,
+        attn_implementation=args.attn_implementation,
     )
+
+    # Load dataset (mirror train_qLora.py field mapping)
     if args.parquet_path:
         ds = load_dataset("parquet", data_files=args.parquet_path, split="train")
 
@@ -249,6 +364,7 @@ def main():
                 "context": ctx,
                 "span_token_start": None,
                 "span_token_end": None,
+                "id": ex.get("id", None),
             }
 
         ds = ds.map(_prep_row_px)
@@ -268,7 +384,6 @@ def main():
     elif args.hf_dataset:
         ds = load_dataset(args.hf_dataset, split=args.hf_split)
 
-        # Map CoEdIT-style fields to our expected schema
         def _prep_row(ex):
             bad = ex.get("src", "")
             good = ex.get("tgt", "")
@@ -280,6 +395,7 @@ def main():
                     "context": None,
                     "span_token_start": None,
                     "span_token_end": None,
+                    "id": None,
                 }
             return {
                 "bad": bad,
@@ -287,6 +403,9 @@ def main():
                 "context": (f"Task: {task}" if task else None),
                 "span_token_start": None,
                 "span_token_end": None,
+                "id": ex.get("_id", None)
+                if isinstance(ex.get("_id", None), (str, int))
+                else None,
             }
 
         ds = ds.map(_prep_row)
@@ -306,23 +425,46 @@ def main():
         ds = ds.remove_columns([c for c in ds.column_names if c not in keep_cols])
     else:
         ds = load_dataset("json", data_files=args.dataset, split="train")
+
+    # Optionally cap the number of evaluated samples for quicker runs
+    if args.max_generated and args.max_generated > 0:
+        take = min(int(args.max_generated), len(ds))
+        ds = ds.select(range(take))
+        LOGGER.info(f"Limiting evaluation to {take} examples (max_generated).")
+
     results = []
     model.eval()
+    gen_max_new_tokens = COMET_GEN_MAX_NEW_TOKENS
     with torch.no_grad():
-        for i in range(0, len(ds), args.batch):
-            batch = ds[i : i + args.batch]
-            prompts = [build_prompt(b["bad"], b.get("context")) for b in batch]
+        for i in tqdm(
+            range(0, len(ds), args.batch),
+            total=(len(ds) + args.batch - 1) // args.batch,
+            desc="Evaluating",
+        ):
+            start, end = i, min(i + args.batch, len(ds))
+            # Convert to list of dict rows; note that ds[i:j] returns column-wise dict-of-lists
+            batch_rows = [ds[j] for j in range(start, end)]
+            if TRAIN_DIRECTION == "degrader":
+                prompts = [
+                    build_prompt_degrader(b.get("good", ""), b.get("context"))
+                    for b in batch_rows
+                ]
+            else:
+                prompts = [
+                    build_prompt(b.get("bad", ""), b.get("context")) for b in batch_rows
+                ]
+
             enc = tok(
                 prompts,
                 return_tensors="pt",
                 padding=True,
                 truncation=True,
-                max_length=512,
+                max_length=args.max_seq_len,
             )
             enc = {k: v.to(model.device) for k, v in enc.items()}
             gen = model.generate(
                 **enc,
-                max_new_tokens=128,
+                max_new_tokens=gen_max_new_tokens,
                 do_sample=False,
                 num_beams=1,
                 pad_token_id=tok.eos_token_id,
@@ -333,27 +475,49 @@ def main():
             for p, full in zip(prompts, outs):
                 idx = full.find(p)
                 txts.append(full[idx + len(p) :] if idx != -1 else full)
-            for ex, txt in zip(batch, txts):
-                ps, pe, sug, rat = parse_output(txt)
-                gs, ge = (
-                    int(ex.get("span_token_start", 0)),
-                    int(ex.get("span_token_end", 0)),
-                )
-                p, r, f1 = span_prf1(ps or 0, pe or 0, gs, ge)
+
+            for j, (ex, txt) in enumerate(zip(batch_rows, txts)):
+                if TRAIN_DIRECTION == "degrader":
+                    # No structured target; prediction is the whole generated text
+                    sug = txt.strip()
+                    ps = pe = None
+                    gold_text = ex.get("bad", "")
+                    span_f1 = 0.0
+                else:
+                    if _CFG.get("train_target_format", "good_only") == "structured":
+                        ps, pe, sug, _ = parse_output(txt)
+                    else:
+                        ps, pe = None, None
+                        sug = txt.strip()
+                    gs = ex.get("span_token_start", None)
+                    ge = ex.get("span_token_end", None)
+                    try:
+                        gs_i = int(gs) if gs is not None else 0
+                        ge_i = int(ge) if ge is not None else 0
+                    except Exception:
+                        gs_i, ge_i = 0, 0
+                    p_, r_, span_f1 = span_prf1(ps or 0, pe or 0, gs_i, ge_i)
+                    gold_text = ex.get("good", "")
+
                 results.append(
                     {
-                        "id": ex["id"],
-                        "bad": ex["bad"],
+                        "id": ex.get("id", f"row_{i + j}"),
+                        "bad": ex.get("bad", ""),
                         "model_suggestion": sug,
-                        "gold": ex["good"],
+                        "gold": gold_text,
                         "bleu": 0.0,
                         "rougeL": 0.0,
                         "embed_sim": 0.0,
-                        "span_pred_start": ps if ps is not None else -1,
-                        "span_pred_end": pe if pe is not None else -1,
-                        "span_f1": f1,
+                        "span_pred_start": (ps if ps is not None else -1)
+                        if TRAIN_DIRECTION != "degrader"
+                        else -1,
+                        "span_pred_end": (pe if pe is not None else -1)
+                        if TRAIN_DIRECTION != "degrader"
+                        else -1,
+                        "span_f1": span_f1 if TRAIN_DIRECTION != "degrader" else 0.0,
                     }
                 )
+
     preds = [r["model_suggestion"] for r in results]
     refs = [r["gold"] for r in results]
     bleu, rouge = compute_bleu_rouge(preds, refs)

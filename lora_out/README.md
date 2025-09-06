@@ -1,12 +1,15 @@
 ---
 base_model: meta-llama/Llama-3.1-8B
-library_name: transformers
+library_name: peft
 model_name: lora_out
 tags:
-- generated_from_trainer
-- trl
+- base_model:adapter:meta-llama/Llama-3.1-8B
+- lora
 - sft
+- transformers
+- trl
 licence: license
+pipeline_tag: text-generation
 ---
 
 # Model Card for lora_out
@@ -34,6 +37,7 @@ This model was trained with SFT.
 
 ### Framework versions
 
+- PEFT 0.17.1
 - TRL: 0.22.2
 - Transformers: 4.56.1
 - Pytorch: 2.8.0
