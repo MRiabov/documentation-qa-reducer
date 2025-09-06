@@ -193,10 +193,14 @@ def load_model(
     debug_tiny: bool,
     device_map: str = "auto",
     quantization: str = "auto",
+    attn_implementation: Optional[str] = None,
 ):
     if debug_tiny:
         model = AutoModelForCausalLM.from_pretrained(
-            model_name, torch_dtype=torch.float32, device_map=device_map
+            model_name,
+            torch_dtype=torch.float32,
+            device_map=device_map,
+            attn_implementation=attn_implementation,
         )
         return model
     # Quantization modes:
@@ -213,6 +217,7 @@ def load_model(
             model_name,
             quantization_config=quant_config,
             device_map=device_map,
+            attn_implementation=attn_implementation,
         )
     elif quantization == "bnb_8bit":
         quant_config = BitsAndBytesConfig(
@@ -222,11 +227,13 @@ def load_model(
             model_name,
             quantization_config=quant_config,
             device_map=device_map,
+            attn_implementation=attn_implementation,
         )
     # auto or none both avoid BitsAndBytes; for 'none' we simply don't pass quantization args
     return AutoModelForCausalLM.from_pretrained(
         model_name,
         device_map=device_map,
+        attn_implementation=attn_implementation,
     )
 
 
@@ -269,6 +276,7 @@ def main():
     args.eval_steps = int(_CFG.get("eval_steps", 100))
     args.evaluation_strategy = _CFG.get("evaluation_strategy", "steps")
     args.bf16 = bool(_CFG.get("bf16", False))
+    args.attn_implementation = _CFG.get("attn_implementation", None)
 
     logging.basicConfig(
         level=getattr(logging, args.log_level),
@@ -283,6 +291,7 @@ def main():
         debug_tiny=args.debug_tiny,
         device_map=args.device_map,
         quantization=args.quantization,
+        attn_implementation=args.attn_implementation,
     )
 
     # Inject LoRA adapters

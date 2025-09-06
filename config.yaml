@@ -39,6 +39,7 @@ quantization: bnb_8bit  # one of: auto, bnb_4bit, bnb_8bit, none
 resume_from_checkpoint: null
 debug_tiny: false
 bf16: false
+attn_implementation: flash_attention_3  # e.g., null, eager, sdpa, flash_attention_2, flash_attention_3
 
 # Logging / evaluation / saving
 log_level: INFO
